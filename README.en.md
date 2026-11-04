@@ -10,33 +10,45 @@ This is not an official DeepSeek product or a fork of the upstream prototype. It
 
 Requires Node.js >= 22 and DSH. Real-instance validation is limited to **Windows / DSH 0.2.1-rc.5**; other platforms and DSH versions have not been validated in a real instance.
 
-- **DSH Desktop:** choose **Add plugin** on the plugins page and enter `https://github.com/superchao5717/dsh-local-superagent` in the package/address field (or use `github:superchao5717/dsh-local-superagent`). Electron manages the Desktop profile; do not manage it with Web CLI commands.
+- **DSH Desktop:** choose **Add plugin** on the plugins page and enter `github:superchao5717/dsh-local-superagent#v0.4.0` in the package/address field to pin the version. See the [v0.4.0 Release](https://github.com/superchao5717/dsh-local-superagent/releases/tag/v0.4.0) for its package assets. Electron manages the Desktop profile; do not manage it with Web CLI commands.
 - **DSH Web:** run this in the environment hosting DSH Web (`--profile` comes before `add`):
 
   ```sh
-  dsh plugin --profile web add github:superchao5717/dsh-local-superagent
+  dsh plugin --profile web add github:superchao5717/dsh-local-superagent#v0.4.0
   ```
 
 Do not edit profile bundles or dependency lists manually. The package name stays `@local/dsh-local-superagent` for existing-profile compatibility; it is not restricted to local installation.
 
 The package remains `private: true`: distribution is through GitHub source and Release `.tgz`, not npm publication. Runtime files are JavaScript and need no build step. Check the [Releases page](https://github.com/superchao5717/dsh-local-superagent/releases) for available assets.
 
-## Use
+## 0.4.0: global settings and a single task entry
 
-1. Open **Superagent**, select a registered workspace, and create or select a supervisor.
-2. Choose **New task**, enter its title, goal, optional acceptance criteria and priority, then enqueue it.
+The following usage describes **0.4.0**. Version 0.3.0 retains per-supervisor settings and its historical validation below. Existing installations require an upgrade; changing documentation does not update a running instance.
+
+The top-right settings panel now owns **one global configuration** for all supervisors and workers: models, automatic review, pause and timeout autonomy. Workspace/supervisor filtering changes only the view, never the scope of settings. `maxWorkers` (1–4) is the same configured concurrency limit **for each supervisor**, not a board-wide worker pool. New settings do not interrupt an in-flight request or execution round; subsequent dispatch, review and continuation use the new values.
+
+Supervisors retain separate task queues, workspace ownership and review contexts, not separate effective model or scheduling settings. An empty worker-model range inherits the unified Superagent model; if that is also empty, DSH's deployment default is used. Session-level routing does not change DSH's global default.
+
+### Upgrading to 0.4.0 / schema 3
+
+Back up the ledger and let running tasks finish before upgrading. Migration takes the original `board.settings` as the global configuration, not the settings of whichever supervisor is selected. Each record retains its original per-supervisor settings unchanged in `legacySettings` for audit. `settingsMigration` records `fromSchema`, `toSchema: 3`, `at`, `settingsSource: 'board.settings'` and a message. Tasks, reports and unanswered questions are preserved. Schema 3 supervisor storage records no longer hold effective `settings`; `board.superagents[].settings` is only a read-only projection of the global settings. Legacy single-supervisor migration still preserves workspace-bound default supervisors.
+
+**Do not directly overwrite a schema 3 installation with 0.3.0 and expect automatic downgrade compatibility.** For rollback, first stop related work and use the pre-upgrade backup; an older version may misinterpret a newer ledger.
+
+## Use (0.4.0)
+
+1. Open **Superagent**, select a registered workspace, and use **＋** in the supervisor rail to create or select a supervisor. The selected supervisor's **⋯** menu provides rename/delete.
+2. Use the sole **New task** entry below the supervisor area; the composer opens there. Enter its title, goal, optional acceptance criteria and priority, then enqueue it. The top toolbar has no duplicate task CTA.
 3. Watch the queued, active and ended columns. Waiting tasks remain in the active column.
 4. Answer questions directly in the top attention panel or task details. Successful answers resume the task.
 
-The compact supervisor rail switches between a supervisor and the aggregate view. Management is collapsed by default. The top attention panel preserves in-page answer drafts across polling and collapse, but clears stale drafts when the question changes. Reopening the task composer retains its in-page draft. Details show reports, deliverables, supervisor decisions, worker session IDs and progress, with retry/stop/delete controls.
-
-Each supervisor has independent queues, models, concurrency (1–4), pause, review and timeout settings. An empty worker-model range inherits that supervisor's model; if both are empty, DSH's deployment default is used. Model selection is session-scoped, not a change to the global default. Existing single-supervisor ledgers migrate while preserving task history; supervisors with unfinished tasks cannot be deleted.
+The compact supervisor rail switches between a supervisor and the aggregate view, with inline create and selected-supervisor actions instead of a separate management panel. The top toolbar provides pause, refresh and global settings. The top attention panel preserves in-page answer drafts across polling and collapse, but clears stale drafts when the question changes. Reopening the task composer retains its in-page draft. Details show reports, deliverables, supervisor decisions, worker session IDs and progress, with retry/stop/delete controls. Supervisors with unfinished tasks cannot be deleted.
 
 ## Security boundaries
 
 - **Not a sandbox:** workers run as the current OS user with `danger-full-access`. They can access files that user can access. Tool filtering and prompts are not OS isolation.
 - Multiple supervisors share workspace disk access. Coordinate write scopes or use project worktrees; there are no automatic filesystem locks.
-- Timeout autonomy is **off by default**. When enabled per supervisor, the wait is **1–1440 minutes** (default 30). Each task gets at most one timeout attempt until a human answers or manually retries. It cannot fabricate a user answer or expand the original authorization.
+- Timeout autonomy is **off by default**. When explicitly enabled in global settings for all supervisors, the wait is **1–1440 minutes** (default 30). Each task gets at most one timeout attempt until a human answers or manually retries. It cannot fabricate a user answer or expand the original authorization.
 - Login, authentication, permissions, payment and new authorization must still be handled by a human. Pause does not stop already-running work, but prevents new dispatch and timeout continuation.
 - Default task guidance is local delivery: no commit, push, deployment or software installation unless the task explicitly authorizes it. These are behavioral rules, not access controls. Model use may incur provider charges.
 
@@ -59,6 +71,14 @@ npm test
 npm run check
 npm pack --dry-run
 ```
+
+### 0.4.0 validation (2026-11-04)
+
+The local offline regression passed **78/78** tests. Schema 2→3 migration of a real-ledger copy verified task/question preservation, archived legacy settings and idempotency. The existing Windows / DSH 0.2.1-rc.5 instance was used to verify global settings across supervisors, rail creation/rename/delete protection and the single task entry. This does not claim a clean Host reinstall or passing cross-platform CI; installation and Release assets need separate verification.
+
+### Published 0.3.0 historical validation
+
+The following results belong only to the published per-supervisor-settings 0.3.0. The 0.4.0 global settings/schema 3 validation above is recorded separately without rewriting historical results.
 
 The 2026-11-04 Windows regression passed **71/71** offline tests, including multi-supervisor isolation, migration, model inheritance, autonomy budgets, human-only gates, stale-review races and compact UI behavior. Host/Client syntax checks passed. Existing Windows / DSH 0.2.1-rc.5 validation covers multiple supervisors, independent settings, waiting cards and an authorized timeout continuation. This is not a claim that all platforms, installations or release assets have passed.
 

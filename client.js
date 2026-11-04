@@ -36,9 +36,9 @@ window.__ModuleLoader__.load({
         metricNeedsYou: 'Needs you',
         metricDone: 'Done',
         metricCapacity: 'Concurrency',
-        pausedHint: 'When enabled, pause stops new dispatches; existing worker sessions continue.',
-        pause: 'Pause',
-        resume: 'Resume',
+        pausedHint: 'Pauses new dispatches for all Superagents; existing worker sessions continue.',
+        pause: 'Pause all',
+        resume: 'Resume all',
         pausedNotice: 'Dispatching paused',
         resumedNotice: 'Dispatching resumed',
         workspaces: 'Workspaces',
@@ -57,7 +57,7 @@ window.__ModuleLoader__.load({
         noWorkspaces: 'No workspace yet',
         noWorkspacesHint: 'Add a local workspace (absolute path) before placing a task.',
         workspaceEmpty: 'No task in the current scope',
-        workspaceEmptyHint: 'Use “+ New task” below to hand over the first one.',
+        workspaceEmptyHint: 'Use “+ New task” above to hand over the first one.',
         newTask: '+ New task',
         collapse: 'Collapse',
         composerHint: 'The title and goal go straight to the worker session: say what to do and how to tell it is done.',
@@ -142,8 +142,8 @@ window.__ModuleLoader__.load({
         verdictNeedsYou: 'Needs you',
         verdictFail: 'Rejected',
         settingsTitle: 'Board settings',
-        maxWorkers: 'Max workers',
-        maxWorkersHint: 'How many worker sessions may run at the same time (1–4).',
+        maxWorkers: 'Workers per supervisor (global)',
+        maxWorkersHint: 'Worker concurrency per supervisor (1–4), configured uniformly for every Superagent; not a shared global pool.',
         autoReview: 'Automatic review',
         autoReviewHint: 'After a worker reports, the supervisor reviews it and decides the next step.',
         supervisor: 'Supervisor session',
@@ -197,9 +197,9 @@ window.__ModuleLoader__.load({
         metricNeedsYou: '待你决定',
         metricDone: '已完成',
         metricCapacity: '并发上限',
-        pausedHint: '开启后暂停新派发，已有执行会话继续。',
-        pause: '暂停',
-        resume: '恢复',
+        pausedHint: '统一暂停所有 Superagent 的新派发，已有执行会话继续。',
+        pause: '暂停全部',
+        resume: '恢复全部',
         pausedNotice: '已暂停派发',
         resumedNotice: '已恢复派发',
         workspaces: '工作区',
@@ -218,7 +218,7 @@ window.__ModuleLoader__.load({
         noWorkspaces: '还没有工作区',
         noWorkspacesHint: '先添加一个本机工作区（绝对路径），之后才能布置任务。',
         workspaceEmpty: '当前范围没有任务',
-        workspaceEmptyHint: '在下面点「＋ 布置新任务」，把第一件事交给它。',
+        workspaceEmptyHint: '使用上方的「＋ 布置任务」，把第一件事交给它。',
         newTask: '＋ 布置新任务',
         collapse: '收起',
         composerHint: '标题和目标会直接交给执行会话：写清楚要做什么、怎样算做完。',
@@ -303,8 +303,8 @@ window.__ModuleLoader__.load({
         verdictNeedsYou: '需要你',
         verdictFail: '不通过',
         settingsTitle: '看板设置',
-        maxWorkers: '并发上限',
-        maxWorkersHint: '同时最多运行几个执行会话（1–4）。',
+        maxWorkers: '每位主管并发上限（统一）',
+        maxWorkersHint: '每位主管的执行并发上限（1–4，统一设置），不是所有主管共用一个总池。',
         autoReview: '自动审查',
         autoReviewHint: '执行会话汇报后，主管自动审查并决定下一步。',
         supervisor: '主管会话',
@@ -433,7 +433,7 @@ window.__ModuleLoader__.load({
       supervisorModelHint: 'Model used by the supervisor session that reviews worker reports. “Follow DSH default” keeps the deployment default.',
       followDefault: 'Follow DSH default',
       workerModels: 'Worker model range',
-      workerModelsHint: 'The superagent may choose any of these models for a worker session; the first one is the default. Select none to inherit the selected Superagent model.',
+      workerModelsHint: 'The superagent may choose any of these models for a worker session; the first one is the default. Select none to inherit the globally configured Superagent model.',
       workerModel: 'Worker model',
       refreshModels: 'Reload models',
       modelsLoading: 'Loading models…',
@@ -450,7 +450,7 @@ window.__ModuleLoader__.load({
       supervisorModelHint: '主管会话（审查执行结果）使用的模型；「跟随 DSH 默认」表示使用部署默认模型。',
       followDefault: '跟随 DSH 默认',
       workerModels: '工作代理模型范围',
-      workerModelsHint: 'Superagent 可从这些模型里为执行会话选择；第一个是默认执行模型。全部不选则继承所选 Superagent 模型。',
+      workerModelsHint: 'Superagent 可从这些模型里为执行会话选择；第一个是默认执行模型。全部不选则继承全局 Superagent 模型。',
       workerModel: '执行模型',
       refreshModels: '重新读取模型',
       modelsLoading: '正在读取模型…',
@@ -464,7 +464,8 @@ window.__ModuleLoader__.load({
 
     Object.assign(dictionaries.en, {
       panelCrashed: 'The Superagent panel could not render.',
-      manageSuperagents: 'Manage', compactSubtitle: 'Delegate · Review · Deliver',
+      globalSettings: 'Global settings · All Superagents', globalSettingsReload: 'Reload or upgrade the Host for global settings. No settings will be changed on this older Host.',
+      createSuperagentShort: 'Create', superagentActions: 'Superagent actions', confirmSuperagentRemoval: 'Remove “{name}”?', compactSubtitle: 'Delegate · Review · Deliver',
       superagents: 'Superagents', allSuperagents: 'Aggregate view', selectSuperagent: 'Select a Superagent to change settings.',
       addSuperagent: 'Create Superagent', renameSuperagent: 'Rename', removeSuperagent: 'Remove Superagent',
       superagentTitle: 'Superagent name', superagentRequired: 'Choose the responsible Superagent.',
@@ -472,7 +473,7 @@ window.__ModuleLoader__.load({
       scopedSettings: 'Settings for', aggregateHint: 'Aggregate view is read-only for settings. Select one supervisor below.',
       legacyHint: 'This Host has no multi-Superagent data. Tasks remain readable; upgrade the Host before managing supervisors.',
       historicalSuperagent: 'Historical / removed supervisor', legacySuperagent: 'Legacy supervisor (unassigned)',
-      inheritSupervisor: 'Inherit selected Superagent model', autonomy: 'Supervisor autonomy after waiting',
+      inheritSupervisor: 'Inherit Superagent model', autonomy: 'Supervisor autonomy after waiting',
       autonomyHint: 'Off by default. One automatic supervisor attempt per task after the wait; a human answer or retry resets it. Decisions stay within the original authorization, never bypassing login, payment, required approvals or human-only operations.',
       waitMinutes: 'Wait minutes (1–1440)', waitInvalid: 'Enter a whole number from 1 to 1440.',
       waitingLabel: 'Waiting for your decision', answerEntry: 'Answer in details', humanWaiting: 'Waiting for a human answer',
@@ -482,7 +483,8 @@ window.__ModuleLoader__.load({
     })
     Object.assign(dictionaries.zh, {
       panelCrashed: 'Superagent 面板渲染出错。',
-      manageSuperagents: '管理', compactSubtitle: '派发 · 审查 · 交付',
+      globalSettings: '全局设置 · 适用于所有 Superagent', globalSettingsReload: '请重载或升级 Host 以使用全局设置；当前旧版 Host 不允许修改，避免误用。',
+      createSuperagentShort: '创建', superagentActions: '主管操作', confirmSuperagentRemoval: '确定移除「{name}」？', compactSubtitle: '派发 · 审查 · 交付',
       superagents: 'Superagent 管理', allSuperagents: '聚合视图', selectSuperagent: '请选择一个 Superagent 后修改设置。',
       addSuperagent: '创建 Superagent', renameSuperagent: '重命名', removeSuperagent: '移除 Superagent',
       superagentTitle: 'Superagent 名称', superagentRequired: '请选择负责此任务的 Superagent。',
@@ -490,7 +492,7 @@ window.__ModuleLoader__.load({
       scopedSettings: '设置仅作用于', aggregateHint: '聚合视图仅汇总任务，不修改设置。请在下方选择一个主管。',
       legacyHint: '当前 Host 尚无多主管数据。可继续查看旧任务；管理主管前请升级 Host。',
       historicalSuperagent: '历史 / 已移除主管', legacySuperagent: '旧版主管（未分配）',
-      inheritSupervisor: '继承所选 Superagent 模型', autonomy: '等待后由主管自主拍板',
+      inheritSupervisor: '继承 Superagent 模型', autonomy: '等待后由主管自主拍板',
       autonomyHint: '默认关闭。等待到期后每任务最多自动尝试一次主管决策，人工回答或重试才重置。仅限原授权范围，不能绕过登录、付款、必须人工批准及其他必须由人完成的操作。',
       waitMinutes: '等待分钟数（1–1440）', waitInvalid: '请输入 1 到 1440 的整数。',
       waitingLabel: '等待你的决定', answerEntry: '进入详情回答', humanWaiting: '等待人工回答',
@@ -983,9 +985,9 @@ window.__ModuleLoader__.load({
       }
       /* Supervisor navigation is a single horizontal rail, not another board. */
       .lsa-agent-section { padding: 5px 0 8px; border-bottom: 1px solid var(--dsw-alias-border-l3); min-width: 0; }
-      .lsa-agent-nav { display: flex; align-items: center; gap: 10px; min-width: 0; }
+      .lsa-agent-nav { position: relative; display: flex; align-items: center; gap: 8px; min-width: 0; }
       .lsa-agent-label { flex: none; font-size: 11px; font-weight: 600; color: var(--dsw-alias-label-tertiary); }
-      .lsa-agent-rail { display: flex; align-items: center; gap: 4px; flex: 1 1 auto; min-width: 0; overflow-x: auto; padding: 3px; scrollbar-width: thin; }
+      .lsa-agent-rail { display: flex; align-items: center; gap: 4px; flex: 0 1 auto; min-width: 0; overflow-x: auto; padding: 3px; scrollbar-width: thin; }
       .lsa-agent-tab { display: inline-flex; align-items: center; gap: 6px; flex: none; max-width: 280px; min-height: 29px; padding: 3px 10px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: var(--dsw-alias-label-secondary); font-size: 12px; }
       .lsa-agent-tab:hover { background: var(--dsw-alias-interactive-bg-hover); }
       .lsa-agent-tab[aria-pressed=true] { border-color: var(--dsw-alias-border-l3); background: color-mix(in srgb, var(--dsw-alias-label-primary) 5%, var(--dsw-alias-bg-base)); color: var(--dsw-alias-label-primary); font-weight: 600; }
@@ -993,7 +995,16 @@ window.__ModuleLoader__.load({
       .lsa-agent-scope { max-width: 100px; font-size: 10px; color: var(--dsw-alias-label-tertiary); font-weight: 400; }
       .lsa-agent-summary { display: flex; align-items: center; gap: 5px 14px; flex-wrap: wrap; padding: 4px 2px 0; font-size: 11px; color: var(--dsw-alias-label-tertiary); }
       .lsa-agent-summary > span { display: inline-flex; align-items: center; gap: 5px; max-width: 280px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .lsa-management { margin-top: 8px; padding: 10px; border-radius: 9px; border: 1px solid var(--dsw-alias-border-l3); }
+      .lsa-agent-option { display: inline-flex; align-items: center; flex: none; gap: 1px; }
+      .lsa-agent-create, .lsa-agent-more { flex: none; }
+      .lsa-agent-more { font-size: 22px; line-height: 1; }
+      .lsa-agent-popup { position: absolute; right: 0; top: calc(100% + 6px); z-index: 45; width: min(330px, 100%); max-height: min(440px, 70dvh); overflow-y: auto; padding: 12px; border-radius: 11px; border: 1px solid var(--dsw-alias-border-l3); background: var(--dsw-alias-bg-base); box-shadow: 0 10px 28px color-mix(in srgb, var(--dsw-alias-label-primary) 14%, transparent); }
+      .lsa-agent-popup-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; overflow-wrap: anywhere; }
+      .lsa-agent-menu, .lsa-agent-confirm { display: flex; flex-direction: column; gap: 8px; padding-top: 10px; }
+      .lsa-agent-menu > button { justify-content: flex-start; }
+      .lsa-agent-editor { margin-top: 8px; padding: 10px; border: 1px solid var(--dsw-alias-border-l3); border-radius: 9px; }
+      .lsa-task-entry { display: flex; flex-direction: column; align-items: flex-start; gap: 9px; margin: 10px 0 0; }
+      .lsa-task-entry > .lsa-panel { align-self: stretch; }
       .lsa-agent-form { margin-top: 8px; display: flex; flex-wrap: wrap; align-items: end; gap: 8px; }
       .lsa-agent-form .lsa-field { flex: 1 1 180px; }
       .lsa-scope-label { margin: 5px 0; font-size: 11px; color: var(--dsw-alias-label-secondary); overflow-wrap: anywhere; }
@@ -1009,7 +1020,7 @@ window.__ModuleLoader__.load({
         .lsa-skeleton-cols { grid-template-columns: minmax(0, 1fr); }
         .lsa-shell { padding: 0 13px 44px; }
         .lsa-topbar { margin: 0 -13px; padding: 11px 13px; }
-        .lsa-newtask-label, .lsa-agent-label { display: none; }
+        .lsa-agent-label { display: none; }
         .lsa-agent-nav { gap: 5px; }
         .lsa-agent-summary { gap: 4px 10px; }
         .lsa-btn { padding: 0 10px; }
@@ -1153,6 +1164,7 @@ window.__ModuleLoader__.load({
         case 'forbidden': return t('errorForbidden')
         case 'invalid_request': return info.message || t('errorInvalid')
         case 'unknown_action': return t('errorUnknownAction')
+        case 'settings_scope_changed': return t('globalSettingsReload')
         default: return info.message || t('errorInternal')
       }
     }
@@ -1267,7 +1279,7 @@ window.__ModuleLoader__.load({
       const multiSuperagent = Array.isArray(source.superagents)
       const superagents = (multiSuperagent ? source.superagents : [])
         .filter(item => item && typeof item.id === 'string' && typeof item.workspaceId === 'string')
-        .map(item => ({ ...item, title: item.title || item.id, settings: normalizeSettings(item.settings) }))
+        .map(item => ({ ...item, title: item.title || item.id, settings: source.settingsScope === 'global' ? settings : normalizeSettings(item.settings) }))
       const count = status => tasks.filter(task => task.status === status).length
       const rawLive = source.live && typeof source.live === 'object' ? source.live : {}
       const live = {
@@ -1284,6 +1296,7 @@ window.__ModuleLoader__.load({
         version: typeof source.version === 'string' ? source.version : '',
         stateDir: typeof source.stateDir === 'string' ? source.stateDir : '',
         settings,
+        settingsScope: source.settingsScope === 'global' ? 'global' : '',
         superagents,
         multiSuperagent,
         workspaces,
@@ -1372,7 +1385,7 @@ window.__ModuleLoader__.load({
     }
 
     function Topbar(props) {
-      const { t, board, scopeTitle, busy, refreshing, settingsOpen, addWorkspaceOpen, onToggleSettings, onTogglePause, onRefresh, onNewTask, newTaskActive, newTaskButtonRef, settingsPopover, settingsWrapRef, settingsPopoverId } = props
+      const { t, board, settingsWritable, busy, refreshing, settingsOpen, onToggleSettings, onTogglePause, onRefresh, settingsPopover, settingsWrapRef, settingsPopoverId } = props
       const paused = board && board.settings && board.settings.paused
       return h('header', { className: 'lsa-topbar' },
         h('div', { className: 'lsa-brand' },
@@ -1384,20 +1397,10 @@ window.__ModuleLoader__.load({
         ),
         h('div', { className: 'lsa-top-actions' },
           h('button', {
-            type: 'button',
-            className: 'lsa-btn lsa-btn-primary',
-            onClick: onNewTask, ref: newTaskButtonRef,
-            'aria-expanded': newTaskActive, 'aria-label': t('newTaskShort'),
-            disabled: !board || board.workspaces.length === 0,
-          },
-            h(Icon, { name: 'plus', size: 15 }),
-            h('span', { className: 'lsa-newtask-label' }, t('newTaskShort')),
-          ),
-          h('button', {
-            type: 'button', className: 'lsa-iconbtn', title: scopeTitle ? t('pauseHint') : t('selectSuperagent'),
+            type: 'button', className: 'lsa-iconbtn', title: settingsWritable ? t('pausedHint') : t('globalSettingsReload'),
             'aria-pressed': paused ? 'true' : 'false',
-            disabled: !board || !board.settings || busy,
-            'aria-label': scopeTitle ? t(paused ? 'resume' : 'pause') + ' · ' + scopeTitle : t('selectSuperagent'),
+            disabled: !board || !settingsWritable || busy,
+            'aria-label': t(paused ? 'resume' : 'pause'),
             onClick: onTogglePause,
           }, h(Icon, { name: paused ? 'play' : 'pause', size: 16 })),
           h('button', {
@@ -1406,9 +1409,9 @@ window.__ModuleLoader__.load({
           }, refreshing ? h(Spinner, { size: 14 }) : h(Icon, { name: 'refresh', size: 16 })),
           h('div', { className: 'lsa-popwrap', ref: settingsWrapRef },
             h('button', {
-              type: 'button', className: 'lsa-iconbtn', title: scopeTitle ? t('scopedSettings') + ' ' + scopeTitle : t('selectSuperagent'),
-              disabled: !board?.settings || busy,
-              'aria-label': scopeTitle ? t('scopedSettings') + ' ' + scopeTitle : t('selectSuperagent'),
+              type: 'button', className: 'lsa-iconbtn', title: t('globalSettings'),
+              disabled: !board,
+              'aria-label': t('globalSettings'),
               'aria-expanded': settingsOpen, 'aria-controls': settingsPopoverId,
               onClick: onToggleSettings,
             }, h(Icon, { name: 'settings', size: 16 })),
@@ -1451,66 +1454,102 @@ window.__ModuleLoader__.load({
       const [targetWorkspace, setTargetWorkspace] = React.useState(workspaceId || '')
       const [error, setError] = React.useState('')
       const [confirming, setConfirming] = React.useState(false)
-      const [manageOpen, setManageOpen] = React.useState(false)
-      const managementId = useUid('lsa-management')
-      const manageButtonRef = React.useRef(null)
+      const [menuOpen, setMenuOpen] = React.useState(false)
+      const actionsId = useUid('lsa-agent-actions')
+      const rootRef = React.useRef(null)
+      const actionButtonRef = React.useRef(null)
+      const createButtonRef = React.useRef(null)
       const selected = board.superagents.find(agent => agent.id === selectedId)
       const agents = board.superagents.filter(agent => !workspaceId || agent.workspaceId === workspaceId)
-      React.useEffect(() => { setManageOpen(false); setEditing(''); setConfirming(false); setError(''); setTargetWorkspace(workspaceId || '') }, [workspaceId, selectedId])
-      const begin = mode => { setEditing(mode); setTitle(mode === 'rename' ? selected.title : ''); setError(''); setConfirming(false) }
+      const selectedWorkspace = selected && board.workspaces.find(item => item.id === selected.workspaceId)
+      const hasOpenTasks = Boolean(selected && board.tasks.some(task => task.superagentId === selected.id && !ENDED_STATUSES.includes(task.status)))
+      const close = (restore = true) => {
+        const target = editing === 'add' ? createButtonRef : actionButtonRef
+        setMenuOpen(false); setEditing(''); setConfirming(false); setError('')
+        if (restore) target.current?.focus({ preventScroll: true })
+      }
+      React.useEffect(() => { close(false); setTargetWorkspace(workspaceId || '') }, [workspaceId, selectedId])
+      React.useEffect(() => {
+        if (!menuOpen && !editing) return
+        const outside = event => { if (rootRef.current && !rootRef.current.contains(event.target)) close(false) }
+        document.addEventListener('pointerdown', outside)
+        return () => document.removeEventListener('pointerdown', outside)
+      }, [menuOpen, editing])
+      const begin = mode => {
+        setEditing(mode); setTitle(mode === 'rename' ? selected.title : '')
+        setMenuOpen(mode === 'rename'); setError(''); setConfirming(false)
+      }
       const submit = async event => {
         event.preventDefault()
+        if (busy) return
         if (!title.trim() || title.trim().length > 120) { setError(t('nameRequired')); return }
         if (editing === 'add' && !targetWorkspace) { setError(t('taskWorkspaceRequired')); return }
+        if (editing !== 'add' && !selected) return
         const ok = editing === 'add' ? await onAdd({ workspaceId: targetWorkspace, title: title.trim() }) : await onRename({ id: selected.id, title: title.trim() })
-        if (ok) setEditing('')
+        if (ok) close(); else setError(t('actionFailed'))
       }
-      return h('section', { className: 'lsa-agent-section', 'aria-label': t('superagents'), onKeyDown: event => {
-        if (event.key !== 'Escape' || (!manageOpen && !editing && !confirming)) return
-        event.preventDefault(); event.stopPropagation()
-        if (confirming) setConfirming(false)
-        else if (editing) { setEditing(''); manageButtonRef.current?.focus() }
-        else { setManageOpen(false); manageButtonRef.current?.focus() }
+      const remove = async () => {
+        if (!selected || busy || hasOpenTasks || !confirming) return
+        if (await onRemove(selected.id)) close(); else setError(t('actionFailed'))
+      }
+      const editor = h('form', { className: 'lsa-agent-form', onSubmit: submit, 'aria-label': t(editing === 'add' ? 'addSuperagent' : 'renameSuperagent') },
+        editing === 'add' ? h(Field, { id: actionsId + '-workspace', label: t('workspace'), required: true }, h('select', { id: actionsId + '-workspace', className: 'lsa-select', value: targetWorkspace, autoFocus: !targetWorkspace, disabled: busy, onChange: event => setTargetWorkspace(event.target.value) },
+          h('option', { value: '' }, t('taskWorkspaceRequired')), board.workspaces.map(item => h('option', { key: item.id, value: item.id }, item.title || item.path || item.id)))) : null,
+        h(Field, { id: actionsId + '-name', label: t('superagentTitle'), required: true }, h('input', { id: actionsId + '-name', className: 'lsa-input', value: title, maxLength: 120, autoFocus: editing !== 'add' || Boolean(targetWorkspace), disabled: busy, onChange: event => setTitle(event.target.value) })),
+        h('button', { type: 'submit', className: 'lsa-btn lsa-btn-primary lsa-btn-sm', disabled: busy }, busy ? h(Spinner, {}) : null, t('save')),
+        h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm', disabled: busy, onClick: () => close() }, t('cancel')),
+      )
+      return h('section', { ref: rootRef, className: 'lsa-agent-section', 'aria-label': t('superagents'), onKeyDown: event => {
+        if (event.key !== 'Escape' || (!menuOpen && !editing && !confirming)) return
+        event.preventDefault(); event.stopPropagation(); close()
       } },
         h('div', { className: 'lsa-agent-nav' },
           h('h2', { className: 'lsa-agent-label' }, t('superagents')),
           h('div', { className: 'lsa-agent-rail', role: 'group', 'aria-label': t('superagents') },
             h('button', { type: 'button', className: 'lsa-agent-tab', 'aria-pressed': !selectedId, title: t('aggregateHint'), onClick: () => onSelect('') }, h(Icon, { name: 'layers', size: 13 }), t('allSuperagents')),
-            agents.map(agent => h('button', { key: agent.id, type: 'button', className: 'lsa-agent-tab', 'aria-pressed': selectedId === agent.id, title: agent.title + ' · ' + agent.workspaceId + ' · ' + agent.id, onFocus: event => event.currentTarget.scrollIntoView?.({ block: 'nearest', inline: 'nearest' }), onClick: () => onSelect(agent.id) },
+            agents.map(agent => h('div', { key: agent.id, className: 'lsa-agent-option' }, h('button', { type: 'button', className: 'lsa-agent-tab', 'aria-pressed': selectedId === agent.id, title: agent.title + ' · ' + agent.workspaceId + ' · ' + agent.id, onFocus: event => event.currentTarget.scrollIntoView?.({ block: 'nearest', inline: 'nearest' }), onClick: () => onSelect(agent.id) },
               h('span', { className: 'lsa-dot', 'data-state': agent.settings.paused ? 'paused' : agent.supervisor?.running ? 'running' : 'idle', title: t(agent.settings.paused ? 'pause' : agent.supervisor?.running ? 'supervisorRunning' : 'supervisorIdle') }),
               h('span', { className: 'lsa-agent-name' }, agent.title),
               !workspaceId || agents.some(other => other.id !== agent.id && other.title === agent.title) ? h('span', { className: 'lsa-agent-scope' }, board.workspaces.find(item => item.id === agent.workspaceId)?.title || agent.workspaceId, agents.some(other => other.id !== agent.id && other.title === agent.title && other.workspaceId === agent.workspaceId) ? ' · ' + agent.id.slice(-6) : '') : null,
               agent.live?.needsYou > 0 ? h('span', { className: 'lsa-count', title: t('needsYouTitle') }, agent.live.needsYou) : null,
+            ),
+              agent.id === selectedId ? h('button', { type: 'button', className: 'lsa-iconbtn lsa-agent-more', ref: actionButtonRef, 'aria-label': t('superagentActions') + ' · ' + selected.title, title: t('superagentActions') + ' · ' + selected.title, 'aria-haspopup': 'dialog', 'aria-expanded': menuOpen, 'aria-controls': actionsId, onClick: () => { if (menuOpen) close(); else { setMenuOpen(true); setEditing(''); setConfirming(false); setError('') } } }, '⋯') : null,
             )),
           ),
-          h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm', 'aria-expanded': manageOpen, 'aria-controls': managementId, ref: manageButtonRef, onClick: () => { setManageOpen(value => !value); setEditing(''); setConfirming(false); setError('') } }, h(Icon, { name: 'settings', size: 13 }), t('manageSuperagents')),
+          h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm lsa-agent-create', ref: createButtonRef, 'aria-label': t('addSuperagent'), 'aria-expanded': editing === 'add', 'aria-controls': actionsId + '-create', disabled: busy || !board.multiSuperagent || !board.workspaces.length, onClick: () => { if (editing === 'add') close(); else begin('add') } }, h(Icon, { name: 'plus', size: 13 }), t('createSuperagentShort')),
+          menuOpen && selected ? h('div', { id: actionsId, className: 'lsa-agent-popup', role: 'dialog', 'aria-label': t('superagentActions') + ' · ' + selected.title },
+            h('div', { className: 'lsa-agent-popup-head' }, h('strong', null, selected.title), h('button', { type: 'button', className: 'lsa-iconbtn', title: t('close'), onClick: () => close() }, h(Icon, { name: 'close', size: 13 }))),
+            h('p', { className: 'lsa-help' }, (selectedWorkspace?.title || selected.workspaceId) + ' · ' + selected.id),
+            editing === 'rename' ? editor : confirming ? h('div', { className: 'lsa-agent-confirm' },
+              h('p', null, fill(t('confirmSuperagentRemoval'), { name: selected.title })),
+              h('p', { className: 'lsa-help' }, t('removeSuperagentHint')),
+              h('div', { className: 'lsa-form-actions' },
+                h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm lsa-btn-danger', disabled: busy || hasOpenTasks, onClick: remove }, t('confirmRemoveSuperagent')),
+                h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm', disabled: busy, onClick: () => close() }, t('cancel'))),
+            ) : h('div', { className: 'lsa-agent-menu', role: 'menu', 'aria-label': selected.title },
+              h('button', { type: 'button', role: 'menuitem', className: 'lsa-btn lsa-btn-sm', disabled: busy, onClick: () => begin('rename') }, t('renameSuperagent')),
+              h('button', { type: 'button', role: 'menuitem', className: 'lsa-btn lsa-btn-sm lsa-btn-danger', disabled: busy || hasOpenTasks, title: hasOpenTasks ? t('removeSuperagentHint') : '', onClick: () => { if (!busy && !hasOpenTasks) { setConfirming(true); setError('') } } }, t('removeSuperagent')),
+              hasOpenTasks ? h('p', { className: 'lsa-help' }, t('removeSuperagentHint')) : null,
+            ),
+            error ? h('p', { role: 'alert', className: 'lsa-error-text' }, error) : null,
+          ) : null,
         ),
         !board.multiSuperagent ? h('p', { className: 'lsa-scope-label' }, t('legacyHint')) : !agents.length ? h('p', { className: 'lsa-scope-label' }, t('noSuperagents')) : null,
         selected ? h('div', { className: 'lsa-agent-summary' },
-          h('span', { title: board.workspaces.find(item => item.id === selected.workspaceId)?.path }, h(Icon, { name: 'folder', size: 12 }), board.workspaces.find(item => item.id === selected.workspaceId)?.title || selected.workspaceId),
+          h('span', { title: selectedWorkspace?.path }, h(Icon, { name: 'folder', size: 12 }), selectedWorkspace?.title || selected.workspaceId),
           h('span', { title: modelKey(selected.settings.models.supervisor) || t('followDefault') }, h(Icon, { name: 'sparkle', size: 12 }), shortModelLabel(selected.settings.models.supervisor) || t('followDefault')),
           h('span', null, t('metricRunning') + ' ' + (selected.live?.running || 0) + '/' + selected.settings.maxWorkers),
           selected.settings.paused ? h('span', null, t('pausedNotice')) : null,
           selected.settings.autonomy.enabled ? h('span', { title: t('autonomyHint') }, t('autonomy') + ' · ' + selected.settings.autonomy.waitMinutes + ' min') : null,
         ) : null,
-        manageOpen ? h('div', { id: managementId, className: 'lsa-management', role: 'region', 'aria-label': t('manageSuperagents') },
-          h('div', { className: 'lsa-form-actions' },
-            h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm', disabled: busy || !board.multiSuperagent || !board.workspaces.length, onClick: () => begin('add') }, h(Icon, { name: 'plus', size: 13 }), t('addSuperagent')),
-            selected ? h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm', disabled: busy, onClick: () => begin('rename') }, t('renameSuperagent')) : null,
-          ),
-        editing ? h('form', { className: 'lsa-agent-form', onSubmit: submit, 'aria-label': t(editing === 'add' ? 'addSuperagent' : 'renameSuperagent') },
-          editing === 'add' ? h(Field, { id: 'lsa-agent-ws', label: t('workspace'), required: true }, h('select', { id: 'lsa-agent-ws', className: 'lsa-select', value: targetWorkspace, autoFocus: !targetWorkspace, disabled: busy, onChange: event => setTargetWorkspace(event.target.value) },
-            h('option', { value: '' }, t('taskWorkspaceRequired')), board.workspaces.map(item => h('option', { key: item.id, value: item.id }, item.title || item.path || item.id)))) : null,
-          h(Field, { id: 'lsa-agent-name', label: t('superagentTitle'), error, required: true }, h('input', { id: 'lsa-agent-name', className: 'lsa-input', value: title, maxLength: 120, autoFocus: editing !== 'add' || Boolean(targetWorkspace), disabled: busy, onChange: event => setTitle(event.target.value) })),
-          h('button', { type: 'submit', className: 'lsa-btn lsa-btn-primary', disabled: busy }, busy ? h(Spinner, {}) : null, t('save')),
-          h('button', { type: 'button', className: 'lsa-btn', disabled: busy, onClick: () => setEditing('') }, t('cancel')),
-        ) : null,
-        selected ? h('div', { className: 'lsa-agent-form' },
-          h('span', { className: 'lsa-help' }, t('removeSuperagentHint')),
-          h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm lsa-btn-danger', disabled: busy || board.tasks.some(task => task.superagentId === selected.id && !ENDED_STATUSES.includes(task.status)), onClick: async () => { if (!confirming) { setConfirming(true); return }; if (await onRemove(selected.id)) setConfirming(false) } }, t(confirming ? 'confirmRemoveSuperagent' : 'removeSuperagent')),
-          confirming ? h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm', disabled: busy, onClick: () => setConfirming(false) }, t('cancel')) : null,
-        ) : null,
-        ) : null,
+        editing === 'add' ? h('div', { id: actionsId + '-create', className: 'lsa-agent-editor' }, editor, error ? h('p', { role: 'alert', className: 'lsa-error-text' }, error) : null) : null,
+      )
+    }
+
+    function TaskEntry({ t, open, onOpen, buttonRef, containerRef, disabled, children }) {
+      return h('section', { className: 'lsa-task-entry', ref: containerRef, 'aria-label': t('newTaskSection') },
+        h('button', { type: 'button', className: 'lsa-btn lsa-btn-primary', ref: buttonRef, disabled, onClick: onOpen, 'aria-label': t('newTaskShort'), 'aria-expanded': open, 'aria-controls': 'lsa-task-composer' }, h(Icon, { name: 'plus', size: 14 }), t('newTaskShort')),
+        children,
       )
     }
 
@@ -1745,7 +1784,7 @@ window.__ModuleLoader__.load({
       const counter = (value, max) => ({ text: value.length + ' / ' + max, over: value.length > max })
       if (!open) return null
 
-      return h('section', { className: 'lsa-panel', 'aria-label': t('newTaskSection') },
+      return h('section', { id: 'lsa-task-composer', className: 'lsa-panel', 'aria-label': t('newTaskSection') },
         h('div', { className: 'lsa-panel-pad' },
           h('div', { className: 'lsa-panel-head' },
             h('div', { className: 'lsa-panel-title' },
@@ -1921,7 +1960,7 @@ window.__ModuleLoader__.load({
           : catalogProblem || (catalog && catalog.available ? '' : t('modelsEmpty')))
       return h('div', { className: 'lsa-popover', id, role: 'dialog', 'aria-label': t('settingsTitle') },
         h('div', { className: 'lsa-popover-head' },
-          h('span', { className: 'lsa-popover-title' }, t('scopedSettings') + ' ' + scopeTitle),
+          h('span', { className: 'lsa-popover-title' }, t('globalSettings')),
           h('button', { type: 'button', className: 'lsa-iconbtn', onClick: onClose, title: t('close') }, h(Icon, { name: 'close', size: 14 })),
         ),
         h('div', { className: 'lsa-field' },
@@ -2382,8 +2421,8 @@ window.__ModuleLoader__.load({
       const [workspaceId, setWorkspaceId] = React.useState('')
       const [superagentId, setSuperagentId] = React.useState('')
       const selectedSuperagent = board?.superagents.find(agent => agent.id === superagentId) || null
-      const selectedSuperagentRef = React.useRef('')
-      selectedSuperagentRef.current = selectedSuperagent?.id || ''
+      const globalSettingsRef = React.useRef(false)
+      globalSettingsRef.current = board?.settingsScope === 'global'
       const [query, setQuery] = React.useState('')
       const [composerOpen, setComposerOpen] = React.useState(false)
       const [addWorkspaceOpen, setAddWorkspaceOpen] = React.useState(false)
@@ -2410,10 +2449,10 @@ window.__ModuleLoader__.load({
       const settingsWrapRef = React.useRef(null)
       const addWorkspaceWrapRef = React.useRef(null)
       const composerRef = React.useRef(null)
-      const newTaskButtonRef = React.useRef(null)
+      const taskEntryButtonRef = React.useRef(null)
       const closeComposer = React.useCallback(() => {
         setComposerOpen(false)
-        newTaskButtonRef.current?.focus({ preventScroll: true })
+        taskEntryButtonRef.current?.focus({ preventScroll: true })
       }, [])
       const toastSeq = React.useRef(0)
 
@@ -2546,11 +2585,11 @@ window.__ModuleLoader__.load({
       }, [runAction, t])
 
       const saveSettings = React.useCallback(async patch => {
-        if (!selectedSuperagent) return false
+        if (board?.settingsScope !== 'global') return false
         const key = patch.models !== undefined ? 'settings.models'
           : patch.maxWorkers !== undefined ? 'settings.maxWorkers' : patch.autonomy !== undefined ? 'settings.autonomy' : 'settings.autoReview'
-        return Boolean(await runAction(key, 'settings.save', { ...patch, superagentId: selectedSuperagent.id }, 'settingsSaved'))
-      }, [runAction, selectedSuperagent])
+        return Boolean(await runAction(key, 'settings.save', patch, 'settingsSaved'))
+      }, [runAction, board])
 
       const addSuperagent = async payload => {
         const result = await runAction('superagent.add', 'superagent.add', payload, 'superagentSaved')
@@ -2560,44 +2599,39 @@ window.__ModuleLoader__.load({
       const renameSuperagent = payload => runAction('superagent.update', 'superagent.update', payload, 'superagentSaved')
       const removeSuperagent = async id => {
         const result = await runAction('superagent.remove', 'superagent.remove', { id }, 'superagentRemoved')
-        if (result) { setSuperagentId(''); setSettingsOpen(false) }
+        if (result) setSuperagentId('')
         return Boolean(result)
       }
 
       const loadModelCatalog = React.useCallback(async () => {
-        const requestedId = superagentId
-        if (!requestedId || !selectedSuperagentRef.current) return null
+        if (!globalSettingsRef.current) return null
         setModelCatalogLoading(true)
         setModelCatalogError('')
         try {
-          const data = await invoke('models.catalog', { superagentId: requestedId })
-          if (!mountedRef.current || selectedSuperagentRef.current !== requestedId) return null
+          const data = await invoke('models.catalog')
+          if (!mountedRef.current || !globalSettingsRef.current) return null
           const catalog = normalizeModelCatalog(data)
           setModelCatalog(catalog)
           return catalog
         } catch (error) {
-          if (!mountedRef.current || selectedSuperagentRef.current !== requestedId) return null
+          if (!mountedRef.current || !globalSettingsRef.current) return null
           setModelCatalog(null)
           setModelCatalogError(errorText(t, errorInfo(error)) || t('modelsUnavailable'))
           return null
         } finally {
-          if (mountedRef.current && selectedSuperagentRef.current === requestedId) setModelCatalogLoading(false)
+          if (mountedRef.current) setModelCatalogLoading(false)
         }
-      }, [t, superagentId])
-
-      React.useEffect(() => {
-        setModelCatalog(null); setModelCatalogError(''); setModelCatalogLoading(false); setSettingsOpen(false)
-      }, [superagentId])
+      }, [t])
 
       const saveModels = React.useCallback(async patch => (
         Boolean(await saveSettings({ models: patch }))
       ), [saveSettings])
 
       const togglePause = React.useCallback(async () => {
-        if (!selectedSuperagent || busyKey) return
-        const nextPaused = !selectedSuperagent.settings.paused
-        await runAction('settings.pause', 'settings.save', { superagentId: selectedSuperagent.id, paused: nextPaused }, nextPaused ? 'pausedNotice' : 'resumedNotice')
-      }, [selectedSuperagent, busyKey, runAction])
+        if (board?.settingsScope !== 'global' || busyKey) return
+        const nextPaused = !board.settings.paused
+        await runAction('settings.pause', 'settings.save', { paused: nextPaused }, nextPaused ? 'pausedNotice' : 'resumedNotice')
+      }, [board, busyKey, runAction])
 
       const handleAnswerChange = React.useCallback((id, value) => {
         const task = board?.tasks.find(item => item.id === id)
@@ -2699,6 +2733,7 @@ window.__ModuleLoader__.load({
         if (!settingsOpen && !addWorkspaceOpen) return undefined
         const onPointer = event => {
           const target = event.target
+          if (settingsOpen && target.closest?.('.lsa-agent-tab, .lsa-wschip:not(.lsa-wschip-add)')) return
           if (settingsOpen && settingsWrapRef.current && settingsWrapRef.current.contains(target)) return
           if (addWorkspaceOpen && addWorkspaceWrapRef.current && addWorkspaceWrapRef.current.contains(target)) return
           setSettingsOpen(false)
@@ -2777,10 +2812,6 @@ window.__ModuleLoader__.load({
             t,
             title: t('noTasks'),
             hint: t('noTasksHint'),
-            action: h('button', {
-              type: 'button', className: 'lsa-btn lsa-btn-primary',
-              onClick: openComposer,
-            }, h(Icon, { name: 'sparkle', size: 14 }), t('newTaskShort')),
           })
           : filtered.length === 0
             ? (keyword
@@ -2797,10 +2828,6 @@ window.__ModuleLoader__.load({
                 t,
                 title: t('workspaceEmpty'),
                 hint: t('workspaceEmptyHint'),
-                action: h('button', {
-                  type: 'button', className: 'lsa-btn lsa-btn-primary',
-                  onClick: openComposer,
-                }, h(Icon, { name: 'sparkle', size: 14 }), t('newTaskShort')),
               }))
             : null
 
@@ -2812,27 +2839,22 @@ window.__ModuleLoader__.load({
         h('div', { className: 'lsa-shell' },
           h(Topbar, {
             t,
-            board: board && { ...board, settings: selectedSuperagent?.settings || null, supervisor: selectedSuperagent?.supervisor || null },
-            scopeTitle: selectedSuperagent?.title,
+            board,
+            settingsWritable: board?.settingsScope === 'global',
             busy: Boolean(busyKey),
             refreshing,
             settingsOpen,
             addWorkspaceOpen,
             settingsWrapRef,
             settingsPopoverId,
-            newTaskActive: composerOpen,
-            newTaskButtonRef,
-            onNewTask: openComposer,
             onTogglePause: togglePause,
-            onToggleSettings: () => { if (selectedSuperagent) setSettingsOpen(current => !current) },
+            onToggleSettings: () => setSettingsOpen(current => !current),
             onRefresh: () => { loadBoard() },
-            settingsPopover: board && selectedSuperagent ? h(SettingsPopover, {
-              key: selectedSuperagent.id,
-              scopeTitle: selectedSuperagent.title,
+            settingsPopover: board?.settingsScope === 'global' ? h(SettingsPopover, {
               t,
               id: settingsPopoverId,
-              settings: selectedSuperagent.settings,
-              supervisor: selectedSuperagent.supervisor,
+              settings: board.settings,
+              supervisor: board.supervisor,
               stateDir: board.stateDir,
               version: board.version,
               busyKey,
@@ -2844,9 +2866,9 @@ window.__ModuleLoader__.load({
               onRefreshModels: loadModelCatalog,
               onTogglePause: togglePause,
               onClose: () => setSettingsOpen(false),
-            }) : null,
+            }) : board ? h('div', { id: settingsPopoverId, className: 'lsa-popover', role: 'dialog', 'aria-label': t('globalSettings') }, h('p', { role: 'alert' }, t('globalSettingsReload')), h('button', { type: 'button', className: 'lsa-btn', onClick: () => setSettingsOpen(false) }, t('close'))) : null,
           }),
-          selectedSuperagent?.settings.paused
+          board?.settingsScope === 'global' && board.settings.paused
             ? h('div', { className: 'lsa-banner lsa-banner-warn', role: 'status' },
               h(Icon, { name: 'pause', size: 14 }),
               h('span', null, t('pausedHint')),
@@ -2872,7 +2894,7 @@ window.__ModuleLoader__.load({
                 t,
                 workspaces,
                 selected: workspaceId,
-                onSelect: id => { setWorkspaceId(id); setSuperagentId(''); setSettingsOpen(false); setEndedFilter('all') },
+                onSelect: id => { setWorkspaceId(id); setSuperagentId(''); setEndedFilter('all') },
                 addOpen: addWorkspaceOpen,
                 onToggleAdd: () => { setAddWorkspaceOpen(current => !current); setSettingsOpen(false) },
                 addWrapRef: addWorkspaceWrapRef,
@@ -2895,7 +2917,10 @@ window.__ModuleLoader__.load({
               h(SearchBox, { t, value: query, onChange: setQuery }),
             )
             : null,
-          board ? h(SuperagentManager, { key: workspaceId + ':' + (selectedSuperagent?.id || ''), t, board, workspaceId, selectedId: selectedSuperagent?.id || '', onSelect: id => { setSuperagentId(id); setSettingsOpen(false) }, busy: Boolean(busyKey), onAdd: addSuperagent, onRename: renameSuperagent, onRemove: removeSuperagent }) : null,
+          board ? h(SuperagentManager, { key: workspaceId + ':' + (selectedSuperagent?.id || ''), t, board, workspaceId, selectedId: selectedSuperagent?.id || '', onSelect: id => { setSuperagentId(id) }, busy: Boolean(busyKey), onAdd: addSuperagent, onRename: renameSuperagent, onRemove: removeSuperagent }) : null,
+          board ? h(TaskEntry, { t, open: composerOpen, onOpen: openComposer, buttonRef: taskEntryButtonRef, containerRef: composerRef, disabled: !hasWorkspaces },
+            h(TaskComposer, { t, workspaces, superagents: board.superagents, defaultSuperagentId: selectedSuperagent?.id || '', defaultWorkspaceId: workspaceId, busyKey, open: composerOpen, onToggle: closeComposer, onSubmit: addTask }),
+          ) : null,
           !board && !loadError ? h(LoadingSkeleton, { t }) : null,
           !board && loadError
             ? h(EmptyState, {
@@ -2912,20 +2937,6 @@ window.__ModuleLoader__.load({
             ? h('div', { className: 'lsa-layout', 'data-detail': selectedTask ? 'true' : 'false' },
               h('div', { className: 'lsa-main-col' },
                 needsTasks.length > 0 ? h(AttentionPanel, { t, tasks: needsTasks, answers: visibleAnswers, busyKey, now, onAnswerChange: handleAnswerChange, onAnswer: answerTask, onOpen: openDetail }) : null,
-                hasWorkspaces
-                  ? h('div', { ref: composerRef, style: { display: composerOpen ? 'block' : 'contents' } },
-                    h(TaskComposer, {
-                      t,
-                      workspaces,
-                      superagents: board.superagents,
-                      defaultSuperagentId: selectedSuperagent?.id || '',
-                      defaultWorkspaceId: workspaceId || (workspaces[0] ? workspaces[0].id : ''),
-                      busyKey,
-                      open: composerOpen,
-                      onToggle: closeComposer,
-                      onSubmit: addTask,
-                    }))
-                  : null,
                 allSettled && needsTasks.length === 0
                   ? h('div', { className: 'lsa-banner lsa-banner-info', role: 'status' },
                     h(Icon, { name: 'check', size: 14 }),

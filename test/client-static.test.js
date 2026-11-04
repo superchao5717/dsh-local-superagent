@@ -59,7 +59,7 @@ function clientHarness(initialStates = []) {
     },
   }
   vm.createContext(context)
-  const instrumented = source.replace("    return {\n      inject:", "    globalThis.clientTest = { normalizeBoard, normalizeSettings, ownerTitle, waitingText, scopeTasks, TaskCard, Topbar, shortModelLabel, AttentionPanel, TaskComposer, SettingsPopover, DetailDrawer, Page, SuperagentManager, dictionaries };\n    return {\n      inject:")
+  const instrumented = source.replace("    return {\n      inject:", "    globalThis.clientTest = { normalizeBoard, normalizeSettings, ownerTitle, waitingText, scopeTasks, TaskCard, Topbar, TaskEntry, shortModelLabel, AttentionPanel, TaskComposer, SettingsPopover, DetailDrawer, Page, SuperagentManager, dictionaries };\n    return {\n      inject:")
   vm.runInContext(instrumented, context, { filename: clientPath })
   module.factory(name => { assert.equal(name, 'react'); return React })
   return {
@@ -223,7 +223,7 @@ const translate = key => key
 
 function pageHarness(workspace = '', owner = '') {
   const harness = clientHarness()
-  const board = harness.api.normalizeBoard(fixture)
+  const board = harness.api.normalizeBoard({ ...fixture, settingsScope: 'global', settings: { maxWorkers: 2 } })
   // Page's useState order is part of this isolated hook host, not a production API.
   harness.states.push(board, null, false, '', workspace, owner)
   return harness
@@ -260,29 +260,42 @@ test('client: waiting countdown obeys explicit human gate, pause and one-attempt
   assert.equal(api.waitingText({ ...task, autonomy: { attempted: true } }, settings, 1001, translate), 'autonomyAttempted')
 })
 
-test('client: aggregate settings cannot write and scoped settings/catalog carry the exact supervisor', async () => {
-  const aggregate = pageHarness()
-  const aggregateTree = aggregate.render('Page', { t: translate })
-  const top = component(aggregateTree, 'Topbar')
-  assert.equal(top.props.board.settings, null)
-  assert.equal(top.props.settingsPopover, null)
-  await top.props.onTogglePause()
-  assert.equal(aggregate.calls.length, 0)
-
-  const scoped = pageHarness('w1', 'a')
-  let tree = scoped.render('Page', { t: translate })
+test('client: global settings work in aggregate or selected scope without a supervisor id; old Hosts cannot write', async () => {
+  const harness = pageHarness()
+  let tree = harness.render('Page', { t: translate })
+  let top = component(tree, 'Topbar')
+  assert.equal(top.props.settingsWritable, true)
+  assert.equal(top.props.settingsPopover.props.settings.maxWorkers, 2)
+  assert.equal(top.props.board.superagents[0].settings.maxWorkers, 2, 'global board.settings wins over old per-supervisor projection')
+  assert.equal(top.props.board.superagents[1].settings.paused, false, 'old per-supervisor pause must not override global pause')
+  top.props.onToggleSettings()
+  tree = harness.render('Page', { t: translate })
   const settings = component(tree, 'Topbar').props.settingsPopover
-  assert.equal(settings.props.scopeTitle, 'Alpha')
   await settings.props.onSave({ maxWorkers: 3 })
   await settings.props.onSaveModels({ workers: [] })
   await settings.props.onRefreshModels()
-  assert.deepEqual(plain(scoped.calls.map(({ action, superagentId }) => ({ action, superagentId }))), [
-    { action: 'settings.save', superagentId: 'a' }, { action: 'settings.save', superagentId: 'a' }, { action: 'models.catalog', superagentId: 'a' },
-  ])
-  assert.deepEqual(plain(scoped.calls[1].models), { workers: [] })
-  tree = scoped.render('Page', { t: translate })
   await component(tree, 'Topbar').props.onTogglePause()
-  assert.equal(scoped.calls.at(-1).superagentId, 'a')
+  assert.deepEqual(harness.calls.map(call => call.action), ['settings.save', 'settings.save', 'models.catalog', 'settings.save'])
+  for (const call of harness.calls) assert.equal(Object.hasOwn(call, 'superagentId'), false)
+  tree = harness.render('Page', { t: translate })
+  const catalog = component(tree, 'Topbar').props.settingsPopover.props.catalog
+  component(tree, 'SuperagentManager').props.onSelect('b')
+  tree = harness.render('Page', { t: translate })
+  top = component(tree, 'Topbar')
+  assert.equal(top.props.settingsOpen, true, 'task filtering does not close global settings')
+  assert.equal(top.props.settingsPopover.props.catalog, catalog, 'task filtering does not reset the global catalog')
+  assert.equal(top.props.settingsPopover.props.key, undefined, 'global settings never remount per supervisor')
+
+  const old = clientHarness()
+  old.states.push(old.api.normalizeBoard(fixture))
+  const oldTree = old.render('Page', { t: translate })
+  const oldTop = component(oldTree, 'Topbar')
+  assert.equal(oldTop.props.settingsWritable, false)
+  assert.match(text(oldTop.props.settingsPopover), /globalSettingsReload/)
+  await oldTop.props.onTogglePause()
+  assert.equal(old.calls.length, 0)
+  const header = clientHarness().render('Topbar', oldTop.props)
+  assert.equal(nodes(header).find(node => node.props['aria-label'] === 'globalSettings').props.disabled, false, 'gear explains compatibility even on older Hosts')
 })
 
 test('client: waiting tasks stay in the in-progress column and ownership appears on card/detail', () => {
@@ -417,57 +430,97 @@ test('client: Superagent create/rename/remove callbacks use contracted payloads'
   const managementHarness = clientHarness()
   const managementProps = { ...manager.props, selectedId: 'a' }
   let management = managementHarness.render('SuperagentManager', managementProps)
-  assert.equal(nodes(management).some(node => node.props.className === 'lsa-management'), false)
-  nodes(management).find(node => node.type === 'button' && text(node).includes('manageSuperagents')).props.onClick()
+  assert.equal(nodes(management).some(node => node.props.className === 'lsa-agent-popup'), false)
+  nodes(management).find(node => node.props.className?.includes('lsa-agent-more')).props.onClick()
   management = managementHarness.render('SuperagentManager', managementProps)
   const remove = nodes(management).find(node => node.type === 'button' && text(node) === 'removeSuperagent')
   assert.equal(remove.props.disabled, true, 'open task blocks remove in UI as well as Host')
 })
 
-test('client: compact rail selects one supervisor and management is keyboard-dismissible and collapsed by default', async () => {
+test('client: visible creation and selected-tab actions replace the old manager; names and Escape are guarded', async () => {
   const harness = clientHarness()
   const board = harness.api.normalizeBoard(fixture)
   board.superagents[1].title = 'Alpha'
-  const selected = []
-  const props = { t: translate, board, workspaceId: 'w1', selectedId: 'a', busy: false, onSelect: id => selected.push(id), onRename() {}, onAdd() {}, onRemove() {} }
+  const selected = [], created = []
+  const props = { t: translate, board, workspaceId: 'w1', selectedId: 'a', busy: false, onSelect: id => selected.push(id), onRename: async () => true, onAdd: async value => { created.push(value); return true }, onRemove: async () => true }
   let tree = harness.render('SuperagentManager', props)
   const tabs = nodes(tree).filter(node => node.props.className === 'lsa-agent-tab')
-  assert.equal(tabs.length, 3, 'aggregate is a tab alongside two supervisors, not a giant card')
-  assert.equal(tabs[1].props['aria-pressed'], true)
-  assert.match(text(tabs[1]), /Alpha.*Workspace one.*a/s, 'same-name supervisors have distinguishable workspace/id labels')
+  assert.equal(tabs.length, 3)
+  assert.match(text(tabs[1]), /Alpha.*Workspace one.*a/s)
   tabs[2].props.onClick()
   assert.deepEqual(selected, ['b'])
-  let scrolled = null
+  let scrolled
   tabs[2].props.onFocus({ currentTarget: { scrollIntoView: value => { scrolled = value } } })
   assert.deepEqual(plain(scrolled), { block: 'nearest', inline: 'nearest' })
-  const manage = value => nodes(value).find(node => node.type === 'button' && text(node).includes('manageSuperagents'))
-  assert.equal(manage(tree).props['aria-expanded'], false)
+  const more = value => nodes(value).find(node => node.props.className?.includes('lsa-agent-more'))
+  const create = value => nodes(value).find(node => node.props.className?.includes('lsa-agent-create'))
+  assert.equal(create(tree).props['aria-label'], 'addSuperagent')
+  assert.match(text(create(tree)), /createSuperagentShort/)
   assert.equal(nodes(tree).some(node => node.props.className === 'lsa-management'), false)
-  manage(tree).props.onClick()
+  assert.equal(nodes(tree).some(node => node.type?.name === 'Icon' && node.props.name === 'settings'), false, 'no duplicate settings gear')
+  const selectedGroup = nodes(tree).find(node => node.props.className === 'lsa-agent-option' && nodes(node).includes(more(tree)))
+  assert.ok(selectedGroup && nodes(selectedGroup).some(node => node.props['aria-pressed'] === true), 'kebab is beside its selected tab without nesting buttons')
+  assert.equal(more(tree).props['aria-expanded'], false)
+  more(tree).props.onClick()
   tree = harness.render('SuperagentManager', props)
-  assert.equal(manage(tree).props['aria-expanded'], true)
+  const popup = nodes(tree).find(node => node.props.className === 'lsa-agent-popup')
+  assert.match(text(popup), /Alpha.*Workspace one.*a/s)
+  assert.equal(nodes(tree).find(node => node.props.className === 'lsa-agent-rail').props.children.flat(Infinity).includes(popup), false, 'popup is outside the overflow rail')
   nodes(tree).find(node => node.type === 'button' && text(node) === 'renameSuperagent').props.onClick()
   tree = harness.render('SuperagentManager', props)
-  assert.ok(nodes(tree).some(node => node.type === 'form'))
-  const nameInput = nodes(tree).find(node => node.type === 'input' && node.props.id === 'lsa-agent-name')
+  const nameInput = nodes(tree).find(node => node.type === 'input')
   assert.equal(nameInput.props.maxLength, 120)
   assert.equal(nameInput.props.autoFocus, true)
   nameInput.props.onChange({ target: { value: 'x'.repeat(121) } })
   tree = harness.render('SuperagentManager', props)
   await nodes(tree).find(node => node.type === 'form').props.onSubmit({ preventDefault() {} })
-  assert.equal(harness.states[3], 'nameRequired', 'names over the backend limit are rejected, not silently truncated')
-  assert.match(harness.api.dictionaries.en.nameRequired, /120/)
-  assert.match(harness.api.dictionaries.zh.nameRequired, /120/)
-  let stopped = 0
-  const esc = () => ({ key: 'Escape', preventDefault() {}, stopPropagation: () => { stopped += 1 } })
-  tree.props.onKeyDown(esc())
+  assert.equal(harness.states[3], 'nameRequired')
+  let focused = 0
+  more(tree).props.ref.current = { focus: () => { focused += 1 } }
+  tree.props.onKeyDown({ key: 'Escape', preventDefault() {}, stopPropagation() {} })
   tree = harness.render('SuperagentManager', props)
-  assert.equal(nodes(tree).some(node => node.type === 'form'), false)
-  assert.equal(manage(tree).props['aria-expanded'], true, 'Escape first closes the edit, not the whole page')
-  tree.props.onKeyDown(esc())
+  assert.equal(nodes(tree).some(node => node.props.className === 'lsa-agent-popup'), false)
+  assert.equal(focused, 1)
+
+  // Aggregate still exposes creation, but has no rename/delete menu.
+  const aggregate = clientHarness()
+  const aggregateProps = { ...props, selectedId: '', workspaceId: '' }
+  tree = aggregate.render('SuperagentManager', aggregateProps)
+  assert.equal(more(tree), undefined)
+  create(tree).props.onClick()
+  tree = aggregate.render('SuperagentManager', aggregateProps)
+  assert.equal(nodes(tree).find(node => node.type === 'select').props.value, '')
+  nodes(tree).find(node => node.type === 'select').props.onChange({ target: { value: 'w2' } })
+  nodes(tree).find(node => node.type === 'input').props.onChange({ target: { value: 'New supervisor' } })
+  tree = aggregate.render('SuperagentManager', aggregateProps)
+  await nodes(tree).find(node => node.type === 'form').props.onSubmit({ preventDefault() {} })
+  assert.deepEqual(plain(created), [{ workspaceId: 'w2', title: 'New supervisor' }])
+})
+
+test('client: supervisor removal requires two steps, names the target, and close/scope clear confirmation', async () => {
+  const harness = clientHarness()
+  const board = harness.api.normalizeBoard({ ...fixture, tasks: [] })
+  const removed = []
+  const t = key => key === 'confirmSuperagentRemoval' ? 'Remove {name}?' : key
+  const props = { t, board, workspaceId: 'w1', selectedId: 'b', busy: false, onRemove: async id => { removed.push(id); return true } }
+  const more = value => nodes(value).find(node => node.props.className?.includes('lsa-agent-more'))
+  const button = (value, label) => nodes(value).find(node => node.type === 'button' && text(node) === label)
+  let tree = harness.render('SuperagentManager', props)
+  more(tree).props.onClick()
   tree = harness.render('SuperagentManager', props)
-  assert.equal(nodes(tree).some(node => node.props.className === 'lsa-management'), false, 'collapsed management leaves no tabbable descendants')
-  assert.equal(stopped, 2)
+  button(tree, 'removeSuperagent').props.onClick()
+  assert.deepEqual(removed, [], 'first click is not destructive')
+  tree = harness.render('SuperagentManager', props)
+  assert.match(text(tree), /Remove Beta/)
+  button(tree, 'cancel').props.onClick()
+  tree = harness.render('SuperagentManager', props)
+  more(tree).props.onClick()
+  tree = harness.render('SuperagentManager', props)
+  assert.equal(button(tree, 'confirmRemoveSuperagent'), undefined, 'closing resets the destructive confirmation')
+  button(tree, 'removeSuperagent').props.onClick()
+  tree = harness.render('SuperagentManager', props)
+  await button(tree, 'confirmRemoveSuperagent').props.onClick()
+  assert.deepEqual(removed, ['b'])
 })
 
 test('client: closed composer has no placeholder or duplicate CTA and reopening retains its local draft', () => {
@@ -487,23 +540,48 @@ test('client: closed composer has no placeholder or duplicate CTA and reopening 
   let pageTree = page.render('Page', { t: translate })
   const composer = component(pageTree, 'TaskComposer')
   assert.equal(composer.props.open, false, 'Page keeps the composer mounted when closed')
-  const wrapper = nodes(pageTree).find(node => node.props.style?.display === 'contents' && component(node, 'TaskComposer'))
-  assert.ok(wrapper, 'closed wrapper contributes no flex gap or placeholder box')
+  const entry = component(pageTree, 'TaskEntry')
+  assert.ok(entry && component(entry, 'TaskComposer'), 'entry retains the mounted composer without a closed placeholder')
+  assert.ok(nodes(pageTree).indexOf(component(pageTree, 'SuperagentManager')) < nodes(pageTree).indexOf(entry))
+  assert.ok(nodes(pageTree).indexOf(entry) < nodes(pageTree).indexOf(component(pageTree, 'AttentionPanel')))
   const header = clientHarness().render('Topbar', component(pageTree, 'Topbar').props)
-  assert.equal(nodes(header).filter(node => node.type === 'button' && node.props['aria-label'] === 'newTaskShort').length, 1)
-  component(pageTree, 'Topbar').props.onNewTask()
+  assert.equal(nodes(header).filter(node => node.type === 'button' && node.props['aria-label'] === 'newTaskShort').length, 0)
+  const entryDOM = clientHarness().render('TaskEntry', entry.props)
+  assert.equal(nodes(entryDOM).filter(node => node.type === 'button' && node.props['aria-label'] === 'newTaskShort').length, 1)
+  entry.props.onOpen()
   pageTree = page.render('Page', { t: translate })
   assert.equal(component(pageTree, 'TaskComposer').props.open, true)
   let focused = 0
-  component(pageTree, 'Topbar').props.newTaskButtonRef.current = { focus: () => { focused += 1 } }
+  component(pageTree, 'TaskEntry').props.buttonRef.current = { focus: () => { focused += 1 } }
   component(pageTree, 'TaskComposer').props.onToggle()
   pageTree = page.render('Page', { t: translate })
   assert.equal(component(pageTree, 'TaskComposer').props.open, false)
-  assert.equal(focused, 1, 'closing returns focus to the sole header CTA')
+  assert.equal(focused, 1, 'closing returns focus to the task entry below Superagent')
   const keyBefore = component(pageTree, 'SuperagentManager').props.key
   component(pageTree, 'SuperagentManager').props.onSelect('b')
   pageTree = page.render('Page', { t: translate })
   assert.notEqual(component(pageTree, 'SuperagentManager').props.key, keyBefore, 'scope change discards stale management edit and confirmation state')
+})
+
+test('client: the task entry is unique even on empty scopes and aggregate requires an explicit owner', () => {
+  for (const tasks of [[], fixture.tasks]) {
+    const harness = clientHarness()
+    harness.states.push(harness.api.normalizeBoard({ ...fixture, tasks, settingsScope: 'global' }))
+    const tree = harness.render('Page', { t: translate })
+    assert.equal(nodes(tree).filter(node => node.type?.name === 'TaskEntry').length, 1)
+    const entry = component(tree, 'TaskEntry')
+    const entryDOM = clientHarness().render('TaskEntry', entry.props)
+    assert.equal(nodes(entryDOM).filter(node => node.type === 'button' && node.props['aria-label'] === 'newTaskShort').length, 1)
+    const headerDOM = clientHarness().render('Topbar', component(tree, 'Topbar').props)
+    assert.equal(nodes(headerDOM).some(node => node.props['aria-label'] === 'newTaskShort'), false)
+    assert.equal(component(tree, 'TaskComposer').props.defaultSuperagentId, '')
+    assert.equal(component(tree, 'TaskComposer').props.defaultWorkspaceId, '')
+    const empty = component(tree, 'EmptyState')
+    if (empty) assert.equal(empty.props.action, undefined, 'empty scope does not add another task CTA')
+  }
+  assert.match(clientHarness().api.dictionaries.en.workspaceEmptyHint, /above/)
+  assert.match(clientHarness().api.dictionaries.zh.workspaceEmptyHint, /上方/)
+  assert.match(source, /case 'settings_scope_changed'/)
 })
 
 test('client: compact model labels preserve full identity in tooltips', () => {
@@ -534,8 +612,8 @@ test('client: autonomy controls enforce integer bounds and worker-empty copy mea
   nodes(tree).find(node => node.type === 'button' && text(node).trim() === 'save').props.onClick()
   assert.deepEqual(plain(saves), [{ autonomy: { enabled: false, waitMinutes: 45 } }])
   const { en, zh } = harness.api.dictionaries
-  assert.match(en.workerModelsHint, /inherit the selected Superagent model/)
-  assert.match(zh.workerModelsHint, /继承所选 Superagent 模型/)
+  assert.match(en.workerModelsHint, /inherit the globally configured Superagent model/)
+  assert.match(zh.workerModelsHint, /继承全局 Superagent 模型/)
   assert.match(en.autonomyHint, /original authorization/)
   assert.match(zh.autonomyHint, /不能绕过登录、付款/)
   assert.match(source, /prefers-reduced-motion/)

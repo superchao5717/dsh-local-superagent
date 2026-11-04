@@ -26,7 +26,7 @@ export const name = 'dsh-local-superagent'
 /** Host services this plugin must have; the plugin stays inactive without them. */
 export const inject = ['connection']
 
-const VERSION = '0.3.0'
+const VERSION = '0.4.0'
 const ROUTE = '/api/local-superagent/invoke'
 
 const json = (value, status = 200) => Response.json(value, {
@@ -137,6 +137,8 @@ export function apply(ctx, config) {
           const board = result.data
           return {
             settings: board.settings,
+            settingsScope: board.settingsScope,
+            settingsMigration: board.settingsMigration,
             live: board.live,
             workspaces: board.workspaces,
             superagents: board.superagents,
