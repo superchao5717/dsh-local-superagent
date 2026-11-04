@@ -1,5 +1,5 @@
 /**
- * Local Superagent — Host half.
+ * Local Superagent - Host half.
  *
  * A local, non-Git task board: the user places tasks in their own DSH
  * workspaces, this plugin dispatches each task to its own worker Session,
@@ -26,7 +26,7 @@ export const name = 'dsh-local-superagent'
 /** Host services this plugin must have; the plugin stays inactive without them. */
 export const inject = ['connection']
 
-const VERSION = '0.1.0'
+const VERSION = '0.3.0'
 const ROUTE = '/api/local-superagent/invoke'
 
 const json = (value, status = 200) => Response.json(value, {
@@ -115,6 +115,7 @@ export function apply(ctx, config) {
         type: 'object',
         properties: {
           action: { type: 'string', enum: ['board', 'add_task', 'task'] },
+          superagentId: { type: 'string', description: 'explicit supervisor id; required if workspace has multiple supervisors' },
           workspaceId: { type: 'string', description: 'target DSH workspace id (see board workspaces)' },
           title: { type: 'string', description: 'short task title' },
           goal: { type: 'string', description: 'what must be done; concrete and self-contained' },
@@ -138,8 +139,10 @@ export function apply(ctx, config) {
             settings: board.settings,
             live: board.live,
             workspaces: board.workspaces,
+            superagents: board.superagents,
             tasks: board.tasks.map(task => ({
               id: task.id,
+              superagentId: task.superagentId,
               title: task.title,
               status: task.status,
               workspace: task.workspaceTitle,
@@ -159,6 +162,7 @@ export function apply(ctx, config) {
           const result = await api.handle({
             action: 'task.add',
             workspaceId: args.workspaceId,
+            superagentId: args.superagentId,
             title: args.title,
             goal: args.goal,
             acceptance: args.acceptance,

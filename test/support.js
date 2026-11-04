@@ -80,6 +80,9 @@ export function fakeSessions(overrides = {}) {
     lastAssistantText: () => '',
     lastTurnEnd: () => undefined,
     supervisorTitle: () => 'Supervisor',
+    applyModel: (sessionId, model) => {
+      calls.push({ name: 'applyModel', sessionId, model })
+    },
   }
   return Object.assign(base, overrides, { calls })
 }

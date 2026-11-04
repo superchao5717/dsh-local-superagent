@@ -1,0 +1,28 @@
+# Optional example only: not enabled or remotely validated.
+# Maintainers may copy to .github/workflows/ci.yml after reviewing permissions.
+name: Offline checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [22, 24]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      # No external dependencies: no install, model, GPU or account calls.
+      - run: npm test
+      - run: npm run check
+      - run: npm pack --dry-run

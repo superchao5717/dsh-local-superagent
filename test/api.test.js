@@ -14,6 +14,7 @@ function makeEngine(overrides = {}) {
     removeTask: () => ({ ok: true }),
     saveSettings: patch => ({ settings: { paused: false, maxWorkers: 2, autoReview: true, ...patch } }),
     addWorkspace: async (path, title) => ({ workspace: { id: 'w1', path, title } }),
+    modelCatalog: async () => ({ available: true, default: null, groups: [], failures: [], models: { supervisor: null, workers: [] } }),
   }
   const methods = { ...defaults, ...overrides }
   const engine = {}
@@ -90,6 +91,18 @@ test('api: settings.save forwards only recognised fields and clamps nothing itse
   assert.deepEqual(calls[1], { name: 'saveSettings', args: [{}] })
   await api.handle({ action: 'settings.save' })
   assert.deepEqual(calls[2], { name: 'saveSettings', args: [{}] })
+
+  const models = { supervisor: { provider: 'p', model: 'm' }, workers: [{ provider: 'p', model: 'm' }] }
+  await api.handle({ action: 'settings.save', models })
+  assert.deepEqual(calls[3], { name: 'saveSettings', args: [{ models }] })
+})
+
+test('api: models.catalog returns the engine catalog', async () => {
+  const { api, calls } = makeApi()
+  const catalog = await api.handle({ action: 'models.catalog' })
+  assert.equal(catalog.ok, true)
+  assert.equal(catalog.data.available, true)
+  assert.deepEqual(calls[0], { name: 'modelCatalog', args: [] })
 })
 
 test('api: workspace.add awaits the engine and forwards path and title', async () => {

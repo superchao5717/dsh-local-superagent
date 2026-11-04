@@ -1,10 +1,26 @@
 {
   "name": "@local/dsh-local-superagent",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "Local Superagent: a workspace task board where a superagent dispatches, reviews and advances tasks on its own, with minimal user interruption.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/superchao5717/dsh-local-superagent.git"
+  },
+  "homepage": "https://github.com/superchao5717/dsh-local-superagent#readme",
+  "bugs": {
+    "url": "https://github.com/superchao5717/dsh-local-superagent/issues"
+  },
+  "keywords": ["dsh-plugin", "workflow", "superagent", "task-board"],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "check": "node --check index.js && node --check client.js && node --check lib/api.js && node --check lib/engine.js && node --check lib/models.js && node --check lib/prompts.js && node --check lib/sessions.js && node --check lib/store.js && node --check lib/tools.js && node --check lib/util.js"
+  },
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
@@ -19,7 +35,13 @@
     "locale/*.json",
     "icon.svg",
     "README.md",
-    "docs/*.md"
+    "README.en.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "THIRD_PARTY_NOTICES.md",
+    "LICENSE",
+    "docs/CONTRACT.md"
   ],
   "dsh": {
     "bundle": {

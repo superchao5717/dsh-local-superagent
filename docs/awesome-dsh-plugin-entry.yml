@@ -1,0 +1,12 @@
+# Submission example only; no third-party PR has been opened by this file.
+# Target: data/plugins/superchao5717__dsh-local-superagent.yml
+# Repo created: 2026-11-04T08:24:38Z; the 1-day age gate is reached at
+# 2026-11-05T08:24:38Z. Recheck the current upstream contribution guide.
+# Publish and verify the stable Release asset below before submitting it.
+url: https://github.com/superchao5717/dsh-local-superagent
+name: superchao5717/dsh-local-superagent
+category: workflow
+description:
+  en: 'A local workspace task board with multiple supervisors that dispatch workers, review reports and request human decisions.'
+  zh: '本地工作区任务看板，由多个主管派发执行会话、审查报告并请求人工决策。'
+tarball: https://github.com/superchao5717/dsh-local-superagent/releases/latest/download/dsh-local-superagent.tgz

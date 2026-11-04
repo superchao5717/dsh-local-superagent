@@ -36,7 +36,7 @@ window.__ModuleLoader__.load({
         metricNeedsYou: 'Needs you',
         metricDone: 'Done',
         metricCapacity: 'Concurrency',
-        pausedHint: 'Dispatching is paused: worker sessions keep running, but no new task will start.',
+        pausedHint: 'When enabled, pause stops new dispatches; existing worker sessions continue.',
         pause: 'Pause',
         resume: 'Resume',
         pausedNotice: 'Dispatching paused',
@@ -56,7 +56,7 @@ window.__ModuleLoader__.load({
         workspaceAdded: 'Workspace added',
         noWorkspaces: 'No workspace yet',
         noWorkspacesHint: 'Add a local workspace (absolute path) before placing a task.',
-        workspaceEmpty: 'No task in this workspace',
+        workspaceEmpty: 'No task in the current scope',
         workspaceEmptyHint: 'Use “+ New task” below to hand over the first one.',
         newTask: '+ New task',
         collapse: 'Collapse',
@@ -197,7 +197,7 @@ window.__ModuleLoader__.load({
         metricNeedsYou: '待你决定',
         metricDone: '已完成',
         metricCapacity: '并发上限',
-        pausedHint: '已暂停派发：现有执行会话继续，但不会开始新任务。',
+        pausedHint: '开启后暂停新派发，已有执行会话继续。',
         pause: '暂停',
         resume: '恢复',
         pausedNotice: '已暂停派发',
@@ -217,7 +217,7 @@ window.__ModuleLoader__.load({
         workspaceAdded: '工作区已添加',
         noWorkspaces: '还没有工作区',
         noWorkspacesHint: '先添加一个本机工作区（绝对路径），之后才能布置任务。',
-        workspaceEmpty: '这个工作区还没有任务',
+        workspaceEmpty: '当前范围没有任务',
         workspaceEmptyHint: '在下面点「＋ 布置新任务」，把第一件事交给它。',
         newTask: '＋ 布置新任务',
         collapse: '收起',
@@ -426,6 +426,78 @@ window.__ModuleLoader__.load({
       kindStop: '停止',
       startedLabel: '开始',
     })
+    // Model configuration strings.
+    Object.assign(dictionaries.en, {
+      modelsSection: 'Models',
+      supervisorModel: 'Superagent model',
+      supervisorModelHint: 'Model used by the supervisor session that reviews worker reports. “Follow DSH default” keeps the deployment default.',
+      followDefault: 'Follow DSH default',
+      workerModels: 'Worker model range',
+      workerModelsHint: 'The superagent may choose any of these models for a worker session; the first one is the default. Select none to inherit the selected Superagent model.',
+      workerModel: 'Worker model',
+      refreshModels: 'Reload models',
+      modelsLoading: 'Loading models…',
+      modelsEmpty: 'No model is currently available.',
+      modelsUnavailable: 'The model catalog is unavailable; the current selection is kept.',
+      modelDefaultTag: 'default',
+      setAsDefault: 'Make default',
+      savingModels: 'Saving models…',
+      scopeModelsLabel: 'Model range',
+    })
+    Object.assign(dictionaries.zh, {
+      modelsSection: '模型',
+      supervisorModel: 'Superagent 模型',
+      supervisorModelHint: '主管会话（审查执行结果）使用的模型；「跟随 DSH 默认」表示使用部署默认模型。',
+      followDefault: '跟随 DSH 默认',
+      workerModels: '工作代理模型范围',
+      workerModelsHint: 'Superagent 可从这些模型里为执行会话选择；第一个是默认执行模型。全部不选则继承所选 Superagent 模型。',
+      workerModel: '执行模型',
+      refreshModels: '重新读取模型',
+      modelsLoading: '正在读取模型…',
+      modelsEmpty: '当前没有可用模型。',
+      modelsUnavailable: '模型目录暂不可用，保留当前选择。',
+      modelDefaultTag: '默认',
+      setAsDefault: '设为默认',
+      savingModels: '正在保存模型…',
+      scopeModelsLabel: '模型范围',
+    })
+
+    Object.assign(dictionaries.en, {
+      panelCrashed: 'The Superagent panel could not render.',
+      manageSuperagents: 'Manage', compactSubtitle: 'Delegate · Review · Deliver',
+      superagents: 'Superagents', allSuperagents: 'Aggregate view', selectSuperagent: 'Select a Superagent to change settings.',
+      addSuperagent: 'Create Superagent', renameSuperagent: 'Rename', removeSuperagent: 'Remove Superagent',
+      superagentTitle: 'Superagent name', superagentRequired: 'Choose the responsible Superagent.',
+      superagentSaved: 'Superagent saved', superagentRemoved: 'Superagent removed', noSuperagents: 'No Superagent in this workspace yet.',
+      scopedSettings: 'Settings for', aggregateHint: 'Aggregate view is read-only for settings. Select one supervisor below.',
+      legacyHint: 'This Host has no multi-Superagent data. Tasks remain readable; upgrade the Host before managing supervisors.',
+      historicalSuperagent: 'Historical / removed supervisor', legacySuperagent: 'Legacy supervisor (unassigned)',
+      inheritSupervisor: 'Inherit selected Superagent model', autonomy: 'Supervisor autonomy after waiting',
+      autonomyHint: 'Off by default. One automatic supervisor attempt per task after the wait; a human answer or retry resets it. Decisions stay within the original authorization, never bypassing login, payment, required approvals or human-only operations.',
+      waitMinutes: 'Wait minutes (1–1440)', waitInvalid: 'Enter a whole number from 1 to 1440.',
+      waitingLabel: 'Waiting for your decision', answerEntry: 'Answer in details', humanWaiting: 'Waiting for a human answer',
+      autonomyCountdown: 'Supervisor review in {time}', autonomyDue: 'Waiting for supervisor review', autonomyAttempted: 'Supervisor tried; still needs you',
+      removeSuperagentHint: 'Open tasks prevent removal. Finished tasks keep their supervisor identity.',
+      confirmRemoveSuperagent: 'Confirm removal', nameRequired: 'Enter a name (up to 120 characters).',
+    })
+    Object.assign(dictionaries.zh, {
+      panelCrashed: 'Superagent 面板渲染出错。',
+      manageSuperagents: '管理', compactSubtitle: '派发 · 审查 · 交付',
+      superagents: 'Superagent 管理', allSuperagents: '聚合视图', selectSuperagent: '请选择一个 Superagent 后修改设置。',
+      addSuperagent: '创建 Superagent', renameSuperagent: '重命名', removeSuperagent: '移除 Superagent',
+      superagentTitle: 'Superagent 名称', superagentRequired: '请选择负责此任务的 Superagent。',
+      superagentSaved: 'Superagent 已保存', superagentRemoved: 'Superagent 已移除', noSuperagents: '此工作区还没有 Superagent。',
+      scopedSettings: '设置仅作用于', aggregateHint: '聚合视图仅汇总任务，不修改设置。请在下方选择一个主管。',
+      legacyHint: '当前 Host 尚无多主管数据。可继续查看旧任务；管理主管前请升级 Host。',
+      historicalSuperagent: '历史 / 已移除主管', legacySuperagent: '旧版主管（未分配）',
+      inheritSupervisor: '继承所选 Superagent 模型', autonomy: '等待后由主管自主拍板',
+      autonomyHint: '默认关闭。等待到期后每任务最多自动尝试一次主管决策，人工回答或重试才重置。仅限原授权范围，不能绕过登录、付款、必须人工批准及其他必须由人完成的操作。',
+      waitMinutes: '等待分钟数（1–1440）', waitInvalid: '请输入 1 到 1440 的整数。',
+      waitingLabel: '等待你的决定', answerEntry: '进入详情回答', humanWaiting: '等待人工回答',
+      autonomyCountdown: '{time} 后主管审查', autonomyDue: '等待主管审查', autonomyAttempted: '主管已尝试，仍需你回答',
+      removeSuperagentHint: '有未结束任务时不能移除；已结束任务保留原主管身份。',
+      confirmRemoveSuperagent: '确认移除', nameRequired: '请填写名称（最多 120 字）。',
+    })
 
     /* --------------------------------------------------------------------- */
     /* icons                                                                 */
@@ -505,32 +577,26 @@ window.__ModuleLoader__.load({
       /* top bar */
       .lsa-topbar {
         position: sticky; top: 0; z-index: 30;
-        display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-        margin: 0 -22px; padding: 13px 22px;
+        display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+        margin: 0 -22px; padding: 10px 22px;
         background: color-mix(in srgb, var(--dsw-alias-bg-base) 86%, transparent);
         backdrop-filter: blur(14px);
         border-bottom: 1px solid var(--dsw-alias-border-l3);
       }
-      .lsa-brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
+      .lsa-brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
       .lsa-logo {
-        display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 11px;
+        display: grid; place-items: center; flex: none; width: 30px; height: 30px; border-radius: 9px;
         color: var(--dsw-alias-label-primary-foreground); background: var(--dsw-alias-state-business-primary);
         box-shadow: 0 3px 10px color-mix(in srgb, var(--dsw-alias-state-business-primary) 34%, transparent);
       }
-      .lsa-brand-text { min-width: 0; }
-      .lsa-title { font-size: 17px; font-weight: 700; line-height: 1.25; letter-spacing: .01em; }
-      .lsa-subtitle { margin-top: 1px; max-width: 640px; font-size: 12px; line-height: 1.45; color: var(--dsw-alias-label-secondary); }
-      .lsa-top-actions { display: flex; align-items: center; gap: 7px; margin-left: auto; flex-wrap: wrap; }
-      .lsa-supervisor {
-        display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
-        border: 1px solid var(--dsw-alias-border-l3); font-size: 11.5px; color: var(--dsw-alias-label-secondary);
-        white-space: nowrap;
-      }
-      .lsa-supervisor b { font-weight: 600; color: var(--dsw-alias-label-primary); }
-      .lsa-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dsw-alias-label-tertiary); flex: none; }
-      .lsa-supervisor[data-state=running] .lsa-dot { background: var(--dsw-alias-state-success-primary); animation: lsa-pulse 1.6s ease-in-out infinite; }
-      .lsa-supervisor[data-state=idle] .lsa-dot { background: var(--dsw-alias-state-business-primary); }
-      .lsa-supervisor[data-state=missing] .lsa-dot { background: var(--dsw-alias-state-warn-primary); }
+      .lsa-brand-text { min-width: 0; display: flex; align-items: baseline; gap: 12px; }
+      .lsa-title { font-size: 16px; font-weight: 700; line-height: 1.25; letter-spacing: .01em; white-space: nowrap; }
+      .lsa-subtitle { font-size: 11px; color: var(--dsw-alias-label-tertiary); white-space: nowrap; }
+      .lsa-top-actions { display: flex; align-items: center; gap: 5px; margin-left: auto; flex-wrap: wrap; }
+      .lsa-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dsw-alias-label-tertiary); flex: none; }
+      .lsa-dot[data-state=running] { background: var(--dsw-alias-state-success-primary); }
+      .lsa-dot[data-state=idle] { background: var(--dsw-alias-state-business-primary); }
+      .lsa-dot[data-state=paused] { background: var(--dsw-alias-state-warn-primary); }
 
       /* buttons */
       .lsa-btn {
@@ -565,7 +631,7 @@ window.__ModuleLoader__.load({
       }
 
       /* tool strip */
-      .lsa-toolstrip { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 0 2px; }
+      .lsa-toolstrip { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 0 4px; }
       .lsa-wsfilter { display: flex; align-items: center; gap: 6px; min-width: 0; overflow-x: auto; flex: 1 1 380px; padding-bottom: 2px; scrollbar-width: none; }
       .lsa-wsfilter::-webkit-scrollbar { display: none; }
       .lsa-wschip {
@@ -688,24 +754,50 @@ window.__ModuleLoader__.load({
       .lsa-switch-title { font-size: 12.5px; font-weight: 600; }
       .lsa-switch-hint { font-size: 11px; color: var(--dsw-alias-label-tertiary); }
 
-      /* needs-you panel */
-      .lsa-needs {
-        border: 1px solid color-mix(in srgb, var(--dsw-alias-state-business-primary) 38%, transparent);
-        border-radius: 16px; padding: 14px 16px;
-        background: linear-gradient(180deg,
-          color-mix(in srgb, var(--dsw-alias-state-business-primary) 7%, transparent),
-          color-mix(in srgb, var(--dsw-alias-state-business-primary) 2%, transparent));
+      /* model configuration */
+      .lsa-model-list {
+        display: flex; flex-direction: column; gap: 8px; max-height: 210px; overflow-y: auto;
+        padding: 8px 9px; border: 1px solid var(--dsw-alias-border-l3); border-radius: 10px;
       }
-      .lsa-needs-head { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
-      .lsa-needs-icon { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 9px; color: var(--dsw-alias-state-business-primary); background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 14%, transparent); }
-      .lsa-needs-title { font-size: 13.5px; font-weight: 700; }
-      .lsa-needs-count { display: inline-flex; align-items: center; padding: 0 8px; height: 19px; border-radius: 999px; background: var(--dsw-alias-state-business-primary); color: var(--dsw-alias-label-primary-foreground); font-size: 11px; font-weight: 650; font-variant-numeric: tabular-nums; }
-      .lsa-needs-hint { font-size: 11.5px; color: var(--dsw-alias-label-secondary); }
-      .lsa-needs-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 10px; margin-top: 11px; }
-      .lsa-needs-card { display: flex; flex-direction: column; gap: 8px; padding: 12px 13px; border-radius: 12px; border: 1px solid var(--dsw-alias-border-l3); background: var(--dsw-alias-bg-base); }
-      .lsa-needs-card-head { display: flex; align-items: flex-start; gap: 8px; }
-      .lsa-needs-card-title { flex: 1 1 auto; min-width: 0; font-size: 13px; font-weight: 650; overflow-wrap: anywhere; }
-      .lsa-needs-card-meta { font-size: 11px; color: var(--dsw-alias-label-tertiary); }
+      .lsa-model-group { display: flex; flex-direction: column; gap: 3px; }
+      .lsa-model-groupname { font-size: 10.5px; font-weight: 600; color: var(--dsw-alias-label-tertiary); text-transform: uppercase; letter-spacing: .03em; }
+      .lsa-model-row { display: flex; align-items: center; gap: 7px; padding: 2px 1px; font-size: 12.5px; }
+      .lsa-model-checklabel { display: flex; align-items: center; gap: 7px; flex: 1 1 auto; min-width: 0; cursor: pointer; }
+      .lsa-model-row:hover { color: var(--dsw-alias-label-primary); }
+      .lsa-popover-sep { height: 1px; background: var(--dsw-alias-border-l3); margin: 2px 0; }
+      .lsa-check { flex: none; width: 13px; height: 13px; margin: 0; accent-color: var(--dsw-alias-state-business-primary); }
+      .lsa-model-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .lsa-tag {
+        flex: none; padding: 1px 6px; border-radius: 999px; font-size: 10px;
+        color: var(--dsw-alias-state-business-primary);
+        border: 1px solid color-mix(in srgb, var(--dsw-alias-state-business-primary) 40%, transparent);
+      }
+      .lsa-model-actions { display: flex; align-items: center; gap: 8px; }
+      .lsa-model-actions .lsa-help { flex: 1 1 auto; }
+      .lsa-model-defaultbtn {
+        flex: none; border: 0; background: transparent; padding: 1px 4px; border-radius: 6px;
+        font-size: 10.5px; color: var(--dsw-alias-state-business-primary);
+      }
+      .lsa-model-defaultbtn:hover { background: var(--dsw-alias-interactive-bg-hover); }
+
+      /* Inline decisions: one calm surface, directly answerable, bounded at scale. */
+      .lsa-needs { border: 1px solid var(--dsw-alias-border-l3); border-left: 3px solid var(--dsw-alias-state-business-primary); border-radius: 11px; padding: 9px 12px; background: var(--dsw-alias-bg-base); }
+      .lsa-needs-head { display: flex; align-items: center; gap: 7px; min-height: 26px; }
+      .lsa-needs-head > button { margin-left: auto; }
+      .lsa-needs-icon { color: var(--dsw-alias-state-business-primary); }
+      .lsa-needs-title { font-size: 12px; font-weight: 650; }
+      .lsa-needs-count { font-size: 11px; font-weight: 600; color: var(--dsw-alias-label-tertiary); font-variant-numeric: tabular-nums; }
+      .lsa-needs-list { display: flex; flex-direction: column; max-height: 340px; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; margin-top: 5px; }
+      .lsa-needs-card { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: none; padding: 6px 3px 5px 0; }
+      .lsa-needs-card + .lsa-needs-card { border-top: 1px solid var(--dsw-alias-border-l3); margin-top: 8px; padding-top: 10px; }
+      .lsa-needs-card-head { display: flex; align-items: baseline; gap: 8px; }
+      .lsa-needs-card-head > button { flex: none; height: 23px; border-color: transparent; color: var(--dsw-alias-label-secondary); }
+      .lsa-needs-card-title { flex: 1 1 auto; min-width: 0; font-size: 12px; font-weight: 650; overflow-wrap: anywhere; }
+      .lsa-needs-card-meta { min-width: 0; max-width: 30%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: var(--dsw-alias-label-tertiary); }
+      .lsa-attention-question { font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+      .lsa-needs .lsa-textarea { min-height: 48px; padding: 6px 9px; }
+      .lsa-attention-timer { overflow-wrap: anywhere; }
+      .lsa-needs .lsa-answer-actions .lsa-help { margin-left: 0; }
       .lsa-question { display: flex; gap: 7px; align-items: flex-start; padding: 8px 10px; border-radius: 9px; background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 8%, transparent); }
       .lsa-question .lsa-icon { margin-top: 1px; color: var(--dsw-alias-state-business-primary); }
       .lsa-question-text { min-width: 0; font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -716,16 +808,16 @@ window.__ModuleLoader__.load({
       .lsa-needs-actions { display: flex; align-items: center; gap: 4px; }
 
       /* board */
-      .lsa-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; padding-top: 14px; }
+      .lsa-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; padding-top: 10px; }
       .lsa-layout[data-detail=true] { grid-template-columns: minmax(0, 1fr) 398px; }
-      .lsa-main-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+      .lsa-main-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
       .lsa-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: start; }
       .lsa-col {
-        display: flex; flex-direction: column; gap: 9px; min-width: 0; padding: 9px;
-        border-radius: 14px; border: 1px solid var(--dsw-alias-border-l3);
-        background: color-mix(in srgb, var(--dsw-alias-label-primary) 3.4%, var(--dsw-alias-bg-base));
+        display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 8px;
+        border-radius: 11px; border: 1px solid var(--dsw-alias-border-l3);
+        background: color-mix(in srgb, var(--dsw-alias-label-primary) 2%, var(--dsw-alias-bg-base));
       }
-      .lsa-col-head { display: flex; align-items: center; gap: 7px; padding: 2px 3px 1px; }
+      .lsa-col-head { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; padding: 2px 3px 1px; }
       .lsa-col-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dsw-alias-label-tertiary); }
       .lsa-col[data-tone=queued] .lsa-col-dot { background: var(--dsw-alias-label-tertiary); }
       .lsa-col[data-tone=running] .lsa-col-dot { background: var(--dsw-alias-state-warn-primary); }
@@ -738,7 +830,7 @@ window.__ModuleLoader__.load({
       .lsa-filter button:hover { background: var(--dsw-alias-interactive-bg-hover); color: var(--dsw-alias-label-primary); }
       .lsa-filter button[aria-pressed=true] { border-color: var(--dsw-alias-border-l3); background: var(--dsw-alias-bg-base); color: var(--dsw-alias-label-primary); font-weight: 600; }
       .lsa-col-list { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
-      .lsa-col-empty { display: flex; align-items: center; justify-content: center; min-height: 66px; border: 1px dashed color-mix(in srgb, var(--dsw-alias-label-primary) 14%, transparent); border-radius: 10px; font-size: 11.5px; color: var(--dsw-alias-label-tertiary); text-align: center; padding: 8px; }
+      .lsa-col-empty { min-height: 40px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--dsw-alias-label-tertiary); text-align: center; padding: 8px; }
 
       /* task card */
       .lsa-card {
@@ -815,7 +907,7 @@ window.__ModuleLoader__.load({
       .lsa-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12.5px; line-height: 1.6; }
       .lsa-report { display: flex; flex-direction: column; gap: 7px; padding: 10px 11px; border-radius: 11px; border: 1px solid var(--dsw-alias-border-l3); background: color-mix(in srgb, var(--dsw-alias-label-primary) 2.4%, var(--dsw-alias-bg-base)); }
       .lsa-report-head { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-      .lsa-chip { display: inline-flex; align-items: center; gap: 5px; height: 19px; padding: 0 8px; border-radius: 999px; border: 1px solid var(--dsw-alias-border-l3); background: transparent; font-size: 10.5px; font-weight: 600; color: var(--dsw-alias-label-secondary); white-space: nowrap; }
+      .lsa-chip { display: inline-flex; align-items: center; align-self: flex-start; flex: none; gap: 4px; height: 18px; padding: 0 6px; border-radius: 999px; border: 1px solid var(--dsw-alias-border-l3); background: transparent; font-size: 10.5px; font-weight: 600; color: var(--dsw-alias-label-secondary); white-space: nowrap; }
       .lsa-chip[data-tone=success] { border-color: color-mix(in srgb, var(--dsw-alias-state-success-primary) 50%, transparent); color: var(--dsw-alias-state-success-primary); }
       .lsa-chip[data-tone=business] { border-color: color-mix(in srgb, var(--dsw-alias-state-business-primary) 50%, transparent); color: var(--dsw-alias-state-business-primary); }
       .lsa-chip[data-tone=warn] { border-color: color-mix(in srgb, var(--dsw-alias-state-warn-primary) 50%, transparent); color: var(--dsw-alias-state-warn-primary); }
@@ -849,6 +941,7 @@ window.__ModuleLoader__.load({
       .lsa-popover {
         position: absolute; right: 0; top: calc(100% + 8px); z-index: 60; width: 330px; max-width: min(330px, 90vw);
         padding: 14px; border-radius: 15px; border: 1px solid var(--dsw-alias-border-l3);
+        max-height: calc(100dvh - 120px); overflow-y: auto; overscroll-behavior: contain;
         background: var(--dsw-alias-bg-base); box-shadow: 0 16px 44px color-mix(in srgb, var(--dsw-alias-label-primary) 16%, transparent);
         display: flex; flex-direction: column; gap: 12px; animation: lsa-fade-up .15s ease both;
       }
@@ -888,12 +981,37 @@ window.__ModuleLoader__.load({
         .lsa-grid-main, .lsa-grid-2 { grid-template-columns: minmax(0, 1fr); }
         .lsa-subtitle { display: none; }
       }
+      /* Supervisor navigation is a single horizontal rail, not another board. */
+      .lsa-agent-section { padding: 5px 0 8px; border-bottom: 1px solid var(--dsw-alias-border-l3); min-width: 0; }
+      .lsa-agent-nav { display: flex; align-items: center; gap: 10px; min-width: 0; }
+      .lsa-agent-label { flex: none; font-size: 11px; font-weight: 600; color: var(--dsw-alias-label-tertiary); }
+      .lsa-agent-rail { display: flex; align-items: center; gap: 4px; flex: 1 1 auto; min-width: 0; overflow-x: auto; padding: 3px; scrollbar-width: thin; }
+      .lsa-agent-tab { display: inline-flex; align-items: center; gap: 6px; flex: none; max-width: 280px; min-height: 29px; padding: 3px 10px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: var(--dsw-alias-label-secondary); font-size: 12px; }
+      .lsa-agent-tab:hover { background: var(--dsw-alias-interactive-bg-hover); }
+      .lsa-agent-tab[aria-pressed=true] { border-color: var(--dsw-alias-border-l3); background: color-mix(in srgb, var(--dsw-alias-label-primary) 5%, var(--dsw-alias-bg-base)); color: var(--dsw-alias-label-primary); font-weight: 600; }
+      .lsa-agent-name, .lsa-agent-scope { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .lsa-agent-scope { max-width: 100px; font-size: 10px; color: var(--dsw-alias-label-tertiary); font-weight: 400; }
+      .lsa-agent-summary { display: flex; align-items: center; gap: 5px 14px; flex-wrap: wrap; padding: 4px 2px 0; font-size: 11px; color: var(--dsw-alias-label-tertiary); }
+      .lsa-agent-summary > span { display: inline-flex; align-items: center; gap: 5px; max-width: 280px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .lsa-management { margin-top: 8px; padding: 10px; border-radius: 9px; border: 1px solid var(--dsw-alias-border-l3); }
+      .lsa-agent-form { margin-top: 8px; display: flex; flex-wrap: wrap; align-items: end; gap: 8px; }
+      .lsa-agent-form .lsa-field { flex: 1 1 180px; }
+      .lsa-scope-label { margin: 5px 0; font-size: 11px; color: var(--dsw-alias-label-secondary); overflow-wrap: anywhere; }
+      .lsa-card[data-status=needs_you] { border-color: color-mix(in srgb, var(--dsw-alias-state-business-primary) 35%, var(--dsw-alias-border-l3)); }
+      .lsa-waiting { display: flex; align-items: baseline; gap: 8px; font-size: 11px; color: var(--dsw-alias-label-secondary); }
+      .lsa-waiting .lsa-card-question-text { flex: 1; min-width: 0; -webkit-line-clamp: 1; }
+      .lsa-card-detail-link { flex: none; font-size: 10.5px; color: var(--dsw-alias-state-business-primary); }
+      .lsa-card-model { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .lsa-select option, .lsa-select optgroup { background: var(--dsw-alias-bg-base); color: var(--dsw-alias-label-primary); }
+      @media (prefers-reduced-motion: reduce) { .lsa-page *, .lsa-page *::before, .lsa-page *::after { animation: none !important; transition: none !important; } }
       @container lsaboard (max-width: 620px) {
         .lsa-board { grid-template-columns: minmax(0, 1fr); }
         .lsa-skeleton-cols { grid-template-columns: minmax(0, 1fr); }
         .lsa-shell { padding: 0 13px 44px; }
         .lsa-topbar { margin: 0 -13px; padding: 11px 13px; }
-        .lsa-newtask-label { display: none; }
+        .lsa-newtask-label, .lsa-agent-label { display: none; }
+        .lsa-agent-nav { gap: 5px; }
+        .lsa-agent-summary { gap: 4px 10px; }
         .lsa-btn { padding: 0 10px; }
       }
     `
@@ -1039,21 +1157,117 @@ window.__ModuleLoader__.load({
       }
     }
 
+    function normalizeModelSelection(value) {
+      if (!value || typeof value !== 'object') return null
+      const provider = typeof value.provider === 'string' ? value.provider.trim() : ''
+      const model = typeof value.model === 'string' ? value.model.trim() : ''
+      if (!provider || !model) return null
+      const reasoningEffort = typeof value.reasoningEffort === 'string' ? value.reasoningEffort.trim() : ''
+      return { provider, model, ...(reasoningEffort ? { reasoningEffort } : {}) }
+    }
+
+    function normalizeModels(value) {
+      const source = value && typeof value === 'object' ? value : {}
+      const seen = new Set()
+      const workers = []
+      for (const item of Array.isArray(source.workers) ? source.workers : []) {
+        const selection = normalizeModelSelection(item)
+        if (!selection) continue
+        const key = modelKey(selection)
+        if (seen.has(key)) continue
+        seen.add(key)
+        workers.push(selection)
+        if (workers.length >= 8) break
+      }
+      return { supervisor: normalizeModelSelection(source.supervisor), workers }
+    }
+
+    function modelKey(selection) {
+      return selection ? selection.provider + '/' + selection.model : ''
+    }
+
+    function shortModelLabel(selection) {
+      const name = selection?.model?.split('/').pop() || ''
+      return name.length > 28 ? name.slice(0, 25) + '…' : name
+    }
+
+    function normalizeModelCatalog(value) {
+      const source = value && typeof value === 'object' ? value : {}
+      const groups = []
+      for (const group of Array.isArray(source.groups) ? source.groups : []) {
+        if (!group || typeof group.id !== 'string' || !group.id) continue
+        const models = []
+        for (const model of Array.isArray(group.models) ? group.models : []) {
+          if (!model || typeof model.id !== 'string' || !model.id) continue
+          models.push({ id: model.id, name: typeof model.name === 'string' && model.name ? model.name : model.id })
+        }
+        if (models.length > 0) {
+          groups.push({
+            id: group.id,
+            name: typeof group.name === 'string' && group.name ? group.name : group.id,
+            models,
+          })
+        }
+      }
+      return {
+        available: groups.length > 0,
+        groups,
+        models: normalizeModels(source.models),
+        reason: typeof source.reason === 'string' ? source.reason : '',
+      }
+    }
+
+    function normalizeSettings(value) {
+      const raw = value && typeof value === 'object' ? value : {}
+      const minutes = Number(raw.autonomy?.waitMinutes)
+      return {
+        paused: raw.paused === true,
+        maxWorkers: Math.min(4, Math.max(1, Math.round(Number(raw.maxWorkers) || 2))),
+        autoReview: raw.autoReview !== false,
+        models: normalizeModels(raw.models),
+        autonomy: { enabled: raw.autonomy?.enabled === true, waitMinutes: Number.isFinite(minutes) ? Math.min(1440, Math.max(1, Math.round(minutes))) : 30 },
+      }
+    }
+
+    function ownerTitle(task, superagents, t) {
+      const owner = superagents.find(agent => agent.id === task.superagentId)
+      return owner ? owner.title : task.superagentTitle || (task.superagentId ? t('historicalSuperagent') + ' · ' + task.superagentId : t('legacySuperagent'))
+    }
+
+    function questionKey(task) {
+      return JSON.stringify([task.question?.at ?? null, task.question?.text || ''])
+    }
+
+    function waitingText(task, settings, now, t) {
+      if (task.autonomyReviewPending === true) return t('autonomyDue')
+      if (settings?.paused) return t('pausedHint')
+      if (task.autonomy?.attempted) return t('autonomyAttempted')
+      if (task.question?.requiresHuman !== false || !settings?.autonomy?.enabled || !Number.isFinite(task.question?.at)) return t('humanWaiting')
+      const remaining = task.question.at + settings.autonomy.waitMinutes * 60000 - now
+      return remaining > 0 ? fill(t('autonomyCountdown'), { time: formatDuration(remaining) }) : t('autonomyDue')
+    }
+
+    function scopeTasks(tasks, workspaceId, superagentId) {
+      return tasks.filter(task => (!workspaceId || task.workspaceId === workspaceId) && (!superagentId || task.superagentId === superagentId))
+    }
+
     function normalizeBoard(value) {
       const source = value && typeof value === 'object' ? value : {}
       const workspaces = Array.isArray(source.workspaces)
         ? source.workspaces.filter(item => item && typeof item === 'object')
         : []
       const tasks = Array.isArray(source.tasks)
-        ? source.tasks.filter(item => item && typeof item === 'object')
+        ? source.tasks.filter(item => item && typeof item === 'object').map(item => ({
+          ...item,
+          workerModel: normalizeModelSelection(item.workerModel),
+        }))
         : []
-      const rawSettings = source.settings && typeof source.settings === 'object' ? source.settings : {}
-      const maxWorkers = Math.min(4, Math.max(1, Math.round(Number(rawSettings.maxWorkers) || 2)))
-      const settings = {
-        paused: rawSettings.paused === true,
-        maxWorkers,
-        autoReview: rawSettings.autoReview !== false,
-      }
+      const settings = normalizeSettings(source.settings)
+      const maxWorkers = settings.maxWorkers
+      const multiSuperagent = Array.isArray(source.superagents)
+      const superagents = (multiSuperagent ? source.superagents : [])
+        .filter(item => item && typeof item.id === 'string' && typeof item.workspaceId === 'string')
+        .map(item => ({ ...item, title: item.title || item.id, settings: normalizeSettings(item.settings) }))
       const count = status => tasks.filter(task => task.status === status).length
       const rawLive = source.live && typeof source.live === 'object' ? source.live : {}
       const live = {
@@ -1070,6 +1284,8 @@ window.__ModuleLoader__.load({
         version: typeof source.version === 'string' ? source.version : '',
         stateDir: typeof source.stateDir === 'string' ? source.stateDir : '',
         settings,
+        superagents,
+        multiSuperagent,
         workspaces,
         tasks,
         live,
@@ -1156,40 +1372,32 @@ window.__ModuleLoader__.load({
     }
 
     function Topbar(props) {
-      const { t, board, refreshing, settingsOpen, addWorkspaceOpen, onToggleSettings, onTogglePause, onRefresh, onNewTask, newTaskActive, settingsPopover, settingsWrapRef, settingsPopoverId } = props
-      const supervisor = board && board.supervisor
-      const supervisorState = !supervisor ? 'missing' : supervisor.running ? 'running' : 'idle'
+      const { t, board, scopeTitle, busy, refreshing, settingsOpen, addWorkspaceOpen, onToggleSettings, onTogglePause, onRefresh, onNewTask, newTaskActive, newTaskButtonRef, settingsPopover, settingsWrapRef, settingsPopoverId } = props
       const paused = board && board.settings && board.settings.paused
-      const supervisorText = !supervisor
-        ? t('supervisorUnavailable')
-        : supervisor.running ? t('supervisorRunning') : t('supervisorIdle')
       return h('header', { className: 'lsa-topbar' },
         h('div', { className: 'lsa-brand' },
           h('span', { className: 'lsa-logo' }, h(Icon, { name: 'brand', size: 19 })),
           h('div', { className: 'lsa-brand-text' },
             h('h1', { className: 'lsa-title' }, t('title')),
-            h('p', { className: 'lsa-subtitle' }, t('subtitle')),
+            h('p', { className: 'lsa-subtitle', title: t('subtitle') }, t('compactSubtitle')),
           ),
         ),
         h('div', { className: 'lsa-top-actions' },
-          h('span', { className: 'lsa-supervisor', 'data-state': supervisorState, title: t('supervisor') + ': ' + supervisorText },
-            h('span', { className: 'lsa-dot' }),
-            t('supervisorLabel'), ' ', h('b', null, supervisorText),
-          ),
           h('button', {
             type: 'button',
             className: 'lsa-btn lsa-btn-primary',
-            onClick: onNewTask,
-            'aria-expanded': newTaskActive,
+            onClick: onNewTask, ref: newTaskButtonRef,
+            'aria-expanded': newTaskActive, 'aria-label': t('newTaskShort'),
             disabled: !board || board.workspaces.length === 0,
           },
             h(Icon, { name: 'plus', size: 15 }),
             h('span', { className: 'lsa-newtask-label' }, t('newTaskShort')),
           ),
           h('button', {
-            type: 'button', className: 'lsa-iconbtn', title: t('pauseHint'),
+            type: 'button', className: 'lsa-iconbtn', title: scopeTitle ? t('pauseHint') : t('selectSuperagent'),
             'aria-pressed': paused ? 'true' : 'false',
-            disabled: !board || !board.settings,
+            disabled: !board || !board.settings || busy,
+            'aria-label': scopeTitle ? t(paused ? 'resume' : 'pause') + ' · ' + scopeTitle : t('selectSuperagent'),
             onClick: onTogglePause,
           }, h(Icon, { name: paused ? 'play' : 'pause', size: 16 })),
           h('button', {
@@ -1198,7 +1406,9 @@ window.__ModuleLoader__.load({
           }, refreshing ? h(Spinner, { size: 14 }) : h(Icon, { name: 'refresh', size: 16 })),
           h('div', { className: 'lsa-popwrap', ref: settingsWrapRef },
             h('button', {
-              type: 'button', className: 'lsa-iconbtn', title: t('settingsHint'),
+              type: 'button', className: 'lsa-iconbtn', title: scopeTitle ? t('scopedSettings') + ' ' + scopeTitle : t('selectSuperagent'),
+              disabled: !board?.settings || busy,
+              'aria-label': scopeTitle ? t('scopedSettings') + ' ' + scopeTitle : t('selectSuperagent'),
               'aria-expanded': settingsOpen, 'aria-controls': settingsPopoverId,
               onClick: onToggleSettings,
             }, h(Icon, { name: 'settings', size: 16 })),
@@ -1232,6 +1442,75 @@ window.__ModuleLoader__.load({
           }, h(Icon, { name: 'plus', size: 14 }), t('addWorkspace')),
           addOpen ? addPopover : null,
         ),
+      )
+    }
+
+    function SuperagentManager({ t, board, workspaceId, selectedId, onSelect, busy, onAdd, onRename, onRemove }) {
+      const [editing, setEditing] = React.useState('')
+      const [title, setTitle] = React.useState('')
+      const [targetWorkspace, setTargetWorkspace] = React.useState(workspaceId || '')
+      const [error, setError] = React.useState('')
+      const [confirming, setConfirming] = React.useState(false)
+      const [manageOpen, setManageOpen] = React.useState(false)
+      const managementId = useUid('lsa-management')
+      const manageButtonRef = React.useRef(null)
+      const selected = board.superagents.find(agent => agent.id === selectedId)
+      const agents = board.superagents.filter(agent => !workspaceId || agent.workspaceId === workspaceId)
+      React.useEffect(() => { setManageOpen(false); setEditing(''); setConfirming(false); setError(''); setTargetWorkspace(workspaceId || '') }, [workspaceId, selectedId])
+      const begin = mode => { setEditing(mode); setTitle(mode === 'rename' ? selected.title : ''); setError(''); setConfirming(false) }
+      const submit = async event => {
+        event.preventDefault()
+        if (!title.trim() || title.trim().length > 120) { setError(t('nameRequired')); return }
+        if (editing === 'add' && !targetWorkspace) { setError(t('taskWorkspaceRequired')); return }
+        const ok = editing === 'add' ? await onAdd({ workspaceId: targetWorkspace, title: title.trim() }) : await onRename({ id: selected.id, title: title.trim() })
+        if (ok) setEditing('')
+      }
+      return h('section', { className: 'lsa-agent-section', 'aria-label': t('superagents'), onKeyDown: event => {
+        if (event.key !== 'Escape' || (!manageOpen && !editing && !confirming)) return
+        event.preventDefault(); event.stopPropagation()
+        if (confirming) setConfirming(false)
+        else if (editing) { setEditing(''); manageButtonRef.current?.focus() }
+        else { setManageOpen(false); manageButtonRef.current?.focus() }
+      } },
+        h('div', { className: 'lsa-agent-nav' },
+          h('h2', { className: 'lsa-agent-label' }, t('superagents')),
+          h('div', { className: 'lsa-agent-rail', role: 'group', 'aria-label': t('superagents') },
+            h('button', { type: 'button', className: 'lsa-agent-tab', 'aria-pressed': !selectedId, title: t('aggregateHint'), onClick: () => onSelect('') }, h(Icon, { name: 'layers', size: 13 }), t('allSuperagents')),
+            agents.map(agent => h('button', { key: agent.id, type: 'button', className: 'lsa-agent-tab', 'aria-pressed': selectedId === agent.id, title: agent.title + ' · ' + agent.workspaceId + ' · ' + agent.id, onFocus: event => event.currentTarget.scrollIntoView?.({ block: 'nearest', inline: 'nearest' }), onClick: () => onSelect(agent.id) },
+              h('span', { className: 'lsa-dot', 'data-state': agent.settings.paused ? 'paused' : agent.supervisor?.running ? 'running' : 'idle', title: t(agent.settings.paused ? 'pause' : agent.supervisor?.running ? 'supervisorRunning' : 'supervisorIdle') }),
+              h('span', { className: 'lsa-agent-name' }, agent.title),
+              !workspaceId || agents.some(other => other.id !== agent.id && other.title === agent.title) ? h('span', { className: 'lsa-agent-scope' }, board.workspaces.find(item => item.id === agent.workspaceId)?.title || agent.workspaceId, agents.some(other => other.id !== agent.id && other.title === agent.title && other.workspaceId === agent.workspaceId) ? ' · ' + agent.id.slice(-6) : '') : null,
+              agent.live?.needsYou > 0 ? h('span', { className: 'lsa-count', title: t('needsYouTitle') }, agent.live.needsYou) : null,
+            )),
+          ),
+          h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm', 'aria-expanded': manageOpen, 'aria-controls': managementId, ref: manageButtonRef, onClick: () => { setManageOpen(value => !value); setEditing(''); setConfirming(false); setError('') } }, h(Icon, { name: 'settings', size: 13 }), t('manageSuperagents')),
+        ),
+        !board.multiSuperagent ? h('p', { className: 'lsa-scope-label' }, t('legacyHint')) : !agents.length ? h('p', { className: 'lsa-scope-label' }, t('noSuperagents')) : null,
+        selected ? h('div', { className: 'lsa-agent-summary' },
+          h('span', { title: board.workspaces.find(item => item.id === selected.workspaceId)?.path }, h(Icon, { name: 'folder', size: 12 }), board.workspaces.find(item => item.id === selected.workspaceId)?.title || selected.workspaceId),
+          h('span', { title: modelKey(selected.settings.models.supervisor) || t('followDefault') }, h(Icon, { name: 'sparkle', size: 12 }), shortModelLabel(selected.settings.models.supervisor) || t('followDefault')),
+          h('span', null, t('metricRunning') + ' ' + (selected.live?.running || 0) + '/' + selected.settings.maxWorkers),
+          selected.settings.paused ? h('span', null, t('pausedNotice')) : null,
+          selected.settings.autonomy.enabled ? h('span', { title: t('autonomyHint') }, t('autonomy') + ' · ' + selected.settings.autonomy.waitMinutes + ' min') : null,
+        ) : null,
+        manageOpen ? h('div', { id: managementId, className: 'lsa-management', role: 'region', 'aria-label': t('manageSuperagents') },
+          h('div', { className: 'lsa-form-actions' },
+            h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm', disabled: busy || !board.multiSuperagent || !board.workspaces.length, onClick: () => begin('add') }, h(Icon, { name: 'plus', size: 13 }), t('addSuperagent')),
+            selected ? h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm', disabled: busy, onClick: () => begin('rename') }, t('renameSuperagent')) : null,
+          ),
+        editing ? h('form', { className: 'lsa-agent-form', onSubmit: submit, 'aria-label': t(editing === 'add' ? 'addSuperagent' : 'renameSuperagent') },
+          editing === 'add' ? h(Field, { id: 'lsa-agent-ws', label: t('workspace'), required: true }, h('select', { id: 'lsa-agent-ws', className: 'lsa-select', value: targetWorkspace, autoFocus: !targetWorkspace, disabled: busy, onChange: event => setTargetWorkspace(event.target.value) },
+            h('option', { value: '' }, t('taskWorkspaceRequired')), board.workspaces.map(item => h('option', { key: item.id, value: item.id }, item.title || item.path || item.id)))) : null,
+          h(Field, { id: 'lsa-agent-name', label: t('superagentTitle'), error, required: true }, h('input', { id: 'lsa-agent-name', className: 'lsa-input', value: title, maxLength: 120, autoFocus: editing !== 'add' || Boolean(targetWorkspace), disabled: busy, onChange: event => setTitle(event.target.value) })),
+          h('button', { type: 'submit', className: 'lsa-btn lsa-btn-primary', disabled: busy }, busy ? h(Spinner, {}) : null, t('save')),
+          h('button', { type: 'button', className: 'lsa-btn', disabled: busy, onClick: () => setEditing('') }, t('cancel')),
+        ) : null,
+        selected ? h('div', { className: 'lsa-agent-form' },
+          h('span', { className: 'lsa-help' }, t('removeSuperagentHint')),
+          h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm lsa-btn-danger', disabled: busy || board.tasks.some(task => task.superagentId === selected.id && !ENDED_STATUSES.includes(task.status)), onClick: async () => { if (!confirming) { setConfirming(true); return }; if (await onRemove(selected.id)) setConfirming(false) } }, t(confirming ? 'confirmRemoveSuperagent' : 'removeSuperagent')),
+          confirming ? h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm', disabled: busy, onClick: () => setConfirming(false) }, t('cancel')) : null,
+        ) : null,
+        ) : null,
       )
     }
 
@@ -1305,24 +1584,24 @@ window.__ModuleLoader__.load({
       },
         h('div', { className: 'lsa-card-head' },
           h('span', { className: 'lsa-card-title' }, task.title || ''),
+          h(StatusChip, { t, status: task.status }),
           h(PriorityMark, { t, priority: task.priority }),
           h(Icon, { name: 'chevronRight', size: 14, className: 'lsa-card-chevron' }),
         ),
         h('div', { className: 'lsa-card-meta' },
           h('span', null, h(Icon, { name: 'folder', size: 11 }), task.workspaceTitle || t('workspace')),
+          h('span', { title: task.superagentId || '' }, t('supervisorLabel') + ': ' + task.superagentTitle),
           attemptLabel ? h('span', null, '· ' + attemptLabel) : null,
+          task.workerModel ? h('span', { className: 'lsa-card-model', title: t('workerModel') + ': ' + modelKey(task.workerModel) }, shortModelLabel(task.workerModel)) : null,
           h('span', null, '· ' + t(elapsedKey(task.status)) + ' ' + formatDuration(elapsed)),
-          task.status === 'reviewing'
-            ? h('span', { className: 'lsa-chip', 'data-tone': 'warn', style: { height: '17px', fontSize: '10px' } }, t('statusReviewing'))
-            : null,
         ),
         showProgress ? h('div', { className: 'lsa-card-progress' },
           h(Icon, { name: 'clock', size: 12 }),
           h('span', { className: 'lsa-card-progress-text' }, progress.text || ''),
         ) : null,
-        showQuestion ? h('div', { className: 'lsa-card-question' },
-          h(Icon, { name: 'help', size: 13 }),
-          h('span', { className: 'lsa-card-question-text' }, task.question.text),
+        task.status === 'needs_you' || task.autonomyReviewPending ? h('div', { className: 'lsa-waiting' },
+          h('span', { className: 'lsa-card-question-text', title: task.question?.text || '' }, task.question?.text || t('noQuestion')),
+          h('span', { className: 'lsa-card-detail-link' }, t('viewDetail'), ' →'),
         ) : null,
         showReview && review.note ? h('div', { className: 'lsa-card-note', 'data-tone': noteTone },
           h(Icon, { name: noteTone === 'success' ? 'check' : noteTone === 'error' ? 'alert' : 'info', size: 13 }),
@@ -1346,69 +1625,63 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function NeedsPanel({ t, tasks, answers, busyKey, onAnswerChange, onSubmitAnswer, onRetry, onStop, onOpen }) {
+    function AttentionPanel({ t, tasks, answers, busyKey, onAnswerChange, onAnswer, onOpen, now }) {
+      const [expanded, setExpanded] = React.useState(true)
+      const [errors, setErrors] = React.useState({})
+      const [submittingId, setSubmittingId] = React.useState('')
+      const submittingRef = React.useRef(false)
+      const regionId = useUid('lsa-attention')
+      const submit = async task => {
+        if (busyKey || submittingRef.current) return
+        const value = (answers[task.id] || '').trim()
+        if (!value) { setErrors(current => ({ ...current, [task.id]: t('noAnswer') })); return }
+        submittingRef.current = true
+        setSubmittingId(task.id)
+        setErrors(current => ({ ...current, [task.id]: '' }))
+        try {
+          const ok = await onAnswer(task.id, value)
+          if (!ok) setErrors(current => ({ ...current, [task.id]: t('actionFailed') }))
+        } catch (error) {
+          setErrors(current => ({ ...current, [task.id]: errorText(t, errorInfo(error)) }))
+        } finally {
+          submittingRef.current = false
+          setSubmittingId('')
+        }
+      }
       return h('section', { className: 'lsa-needs', 'aria-label': t('needsYouTitle') },
         h('div', { className: 'lsa-needs-head' },
           h('span', { className: 'lsa-needs-icon' }, h(Icon, { name: 'help', size: 15 })),
-          h('span', { className: 'lsa-needs-title' }, t('needsYouTitle')),
+          h('h2', { className: 'lsa-needs-title' }, t('needsYouTitle')),
           h('span', { className: 'lsa-needs-count' }, tasks.length),
-          h('span', { className: 'lsa-needs-hint' }, t('needsYouHint')),
+          h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm', 'aria-expanded': expanded, 'aria-controls': regionId, onClick: () => setExpanded(value => !value) },
+            h(Icon, { name: expanded ? 'chevronDown' : 'chevronRight', size: 13 }), t(expanded ? 'collapse' : 'answerSection')),
         ),
-        h('div', { className: 'lsa-needs-list' },
+        h('div', { id: regionId, className: 'lsa-needs-list', hidden: !expanded },
           tasks.map(task => {
-            const question = task.question ? task.question.text : ''
             const value = answers[task.id] || ''
-            const answerKey = 'answer:' + task.id
-            const busy = busyKey === answerKey
-            const submit = () => {
-              if (!value.trim() || busy) return
-              onSubmitAnswer(task.id, value)
-            }
-            return h('article', { key: task.id, className: 'lsa-needs-card' },
+            const busy = submittingId === task.id || busyKey === 'answer:' + task.id
+            const inputId = regionId + '-answer-' + task.id
+            const errorId = inputId + '-error'
+            return h('article', { key: task.id, className: 'lsa-needs-card', 'aria-label': task.title },
               h('div', { className: 'lsa-needs-card-head' },
-                h('div', { className: 'lsa-needs-card-title' }, task.title || ''),
-                h('div', { className: 'lsa-needs-actions' },
-                  h('button', {
-                    type: 'button', className: 'lsa-btn lsa-btn-sm',
-                    disabled: busy, onClick: () => onRetry(task.id),
-                  }, busyKey === 'retry:' + task.id ? h(Spinner, { size: 12 }) : null, t('retryTask')),
-                  h('button', {
-                    type: 'button', className: 'lsa-btn lsa-btn-sm',
-                    disabled: busy, onClick: () => onStop(task.id),
-                  }, t('stop')),
-                  h('button', {
-                    type: 'button', className: 'lsa-btn lsa-btn-sm',
-                    onClick: () => onOpen(task.id),
-                  }, t('viewDetail')),
-                ),
+                h('h3', { className: 'lsa-needs-card-title' }, task.title || ''),
+                h('span', { className: 'lsa-needs-card-meta', title: task.workspaceTitle || '' }, task.superagentTitle),
+                h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm', onClick: () => onOpen(task.id) }, t('viewDetail')),
               ),
-              h('div', { className: 'lsa-needs-card-meta' },
-                (task.workspaceTitle || '') + ' · ' + t('waitingFor') + ' ' + formatDuration(elapsedFor(task, Date.now()))),
-              h('div', { className: 'lsa-question' },
-                h(Icon, { name: 'help', size: 14 }),
-                h('span', { className: 'lsa-question-text' }, question || t('noQuestion')),
-              ),
-              h('div', { className: 'lsa-answer-row' },
-                h('textarea', {
-                  className: 'lsa-textarea', rows: 2, value,
-                  placeholder: t('answerPlaceholder'),
-                  'aria-label': t('answerLabel'),
-                  disabled: busy,
-                  onChange: event => onAnswerChange(task.id, event.target.value),
-                  onKeyDown: event => {
-                    if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
-                      event.preventDefault()
-                      submit()
-                    }
-                  },
-                }),
-                h('div', { className: 'lsa-answer-actions' },
-                  h('button', {
-                    type: 'button', className: 'lsa-btn lsa-btn-primary lsa-btn-sm',
-                    disabled: busy || !value.trim(), onClick: submit,
-                  }, busy ? h(Spinner, { size: 12 }) : h(Icon, { name: 'send', size: 13 }), busy ? t('submittingAnswer') : t('submitAnswer')),
-                  h('span', { className: 'lsa-help' }, t('answersHint')),
-                ),
+              h('p', { id: inputId + '-question', className: 'lsa-attention-question' }, task.question?.text || t('noQuestion')),
+              h('label', { className: 'lsa-sr', htmlFor: inputId }, t('answerLabel') + ' · ' + task.title + ' · ' + task.superagentTitle),
+              h('textarea', { id: inputId, className: 'lsa-textarea', rows: 2, value, disabled: busy,
+                placeholder: t('answerPlaceholder'), 'aria-invalid': errors[task.id] ? 'true' : 'false', 'aria-describedby': inputId + '-question' + (errors[task.id] ? ' ' + errorId : ''),
+                onChange: event => { onAnswerChange(task.id, event.target.value); setErrors(current => ({ ...current, [task.id]: '' })) },
+                onKeyDown: event => {
+                  if (event.key === 'Enter' && !event.shiftKey && !event.isComposing && !event.nativeEvent?.isComposing) { event.preventDefault(); return submit(task) }
+                },
+              }),
+              errors[task.id] ? h('span', { id: errorId, className: 'lsa-error-text', role: 'alert' }, errors[task.id]) : null,
+              h('div', { className: 'lsa-answer-actions' },
+                h('button', { type: 'button', className: 'lsa-btn lsa-btn-primary lsa-btn-sm', disabled: Boolean(busyKey) || Boolean(submittingId) || !value.trim(), onClick: () => submit(task) }, busy ? h(Spinner, { size: 12 }) : h(Icon, { name: 'send', size: 13 }), t(busy ? 'submittingAnswer' : 'submitAnswer')),
+                h('span', { className: 'lsa-help' }, t('answersHint')),
+                task.autonomyReviewPending || task.autonomy?.attempted || task.ownerSettings?.autonomy?.enabled ? h('span', { className: 'lsa-help lsa-attention-timer' }, waitingText(task, task.ownerSettings, now, t)) : null,
               ),
             )
           }),
@@ -1416,15 +1689,16 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function TaskComposer({ t, workspaces, defaultWorkspaceId, busyKey, open, onToggle, onSubmit }) {
-      const [form, setForm] = React.useState({ title: '', goal: '', acceptance: '', priority: 2, workspaceId: defaultWorkspaceId || '' })
+    function TaskComposer({ t, workspaces, superagents, defaultSuperagentId, defaultWorkspaceId, busyKey, open, onToggle, onSubmit }) {
+      const [form, setForm] = React.useState({ title: '', goal: '', acceptance: '', priority: 2, workspaceId: defaultWorkspaceId || '', superagentId: defaultSuperagentId || '' })
       const [errors, setErrors] = React.useState({})
       const busy = busyKey === 'task.add'
       const firstFieldRef = React.useRef(null)
 
       React.useEffect(() => {
-        setForm(current => current.workspaceId ? current : { ...current, workspaceId: defaultWorkspaceId || (workspaces[0] || {}).id || '' })
-      }, [defaultWorkspaceId, workspaces])
+        const owner = superagents.find(agent => agent.id === defaultSuperagentId)
+        setForm(current => ({ ...current, workspaceId: owner?.workspaceId || defaultWorkspaceId || '', superagentId: owner?.id || '' }))
+      }, [defaultWorkspaceId, defaultSuperagentId])
 
       React.useEffect(() => {
         if (open && firstFieldRef.current) {
@@ -1443,6 +1717,7 @@ window.__ModuleLoader__.load({
         else if (form.goal.trim().length > 8000) next.goal = t('taskGoalTooLong')
         if (form.acceptance.trim().length > 4000) next.acceptance = t('taskAcceptanceTooLong')
         if (!form.workspaceId) next.workspaceId = t('taskWorkspaceRequired')
+        if (!superagents.some(agent => agent.id === form.superagentId && agent.workspaceId === form.workspaceId)) next.superagentId = t('superagentRequired')
         setErrors(next)
         return Object.keys(next).length === 0
       }
@@ -1450,6 +1725,7 @@ window.__ModuleLoader__.load({
         if (busy || !validate()) return
         const ok = await onSubmit({
           workspaceId: form.workspaceId,
+          superagentId: form.superagentId,
           title: form.title.trim(),
           goal: form.goal.trim(),
           acceptance: form.acceptance.trim(),
@@ -1467,6 +1743,7 @@ window.__ModuleLoader__.load({
         }
       }
       const counter = (value, max) => ({ text: value.length + ' / ' + max, over: value.length > max })
+      if (!open) return null
 
       return h('section', { className: 'lsa-panel', 'aria-label': t('newTaskSection') },
         h('div', { className: 'lsa-panel-pad' },
@@ -1475,14 +1752,7 @@ window.__ModuleLoader__.load({
               h(Icon, { name: 'sparkle', size: 16 }),
               t('newTaskSection'),
             ),
-            h('span', { className: 'lsa-panel-hint' }, t('composerHint')),
-            h('div', { className: 'lsa-panel-actions' },
-              h('button', {
-                type: 'button', className: 'lsa-btn lsa-btn-sm',
-                'aria-expanded': open, onClick: onToggle,
-              }, open ? h(Icon, { name: 'chevronDown', size: 13 }) : h(Icon, { name: 'plus', size: 13 }),
-                open ? t('collapse') : t('newTaskShort')),
-            ),
+            h('div', { className: 'lsa-panel-actions' }, h('button', { type: 'button', className: 'lsa-iconbtn', title: t('close'), onClick: onToggle }, h(Icon, { name: 'close', size: 14 }))),
           ),
           open ? h('div', { className: 'lsa-form', style: { marginTop: '12px' } },
             h(Field, {
@@ -1519,8 +1789,8 @@ window.__ModuleLoader__.load({
                 h('select', {
                   id: 'lsa-task-workspace', className: 'lsa-select', value: form.workspaceId,
                   'aria-invalid': errors.workspaceId ? 'true' : 'false',
-                  onChange: event => update('workspaceId', event.target.value),
-                }, workspaces.map(workspace => h('option', {
+                  onChange: event => setForm(current => ({ ...current, workspaceId: event.target.value, superagentId: '' })),
+                }, h('option', { value: '' }, t('taskWorkspaceRequired')), workspaces.map(workspace => h('option', {
                   key: workspace.id, value: workspace.id,
                 }, workspace.title || workspace.path || workspace.id))),
               ),
@@ -1537,6 +1807,11 @@ window.__ModuleLoader__.load({
                   onChange: value => update('priority', value),
                 }),
               ),
+            ),
+            h(Field, { id: 'lsa-task-agent', label: t('supervisorLabel'), required: true, error: errors.superagentId },
+              h('select', { id: 'lsa-task-agent', className: 'lsa-select', value: form.superagentId, disabled: busy, 'aria-invalid': errors.superagentId ? 'true' : 'false', onChange: event => update('superagentId', event.target.value) },
+                h('option', { value: '' }, t('superagentRequired')),
+                superagents.filter(agent => agent.workspaceId === form.workspaceId).map(agent => h('option', { key: agent.id, value: agent.id }, agent.title + ' · ' + agent.id))),
             ),
             h('div', { className: 'lsa-form-actions' },
               h('button', {
@@ -1596,12 +1871,57 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function SettingsPopover({ t, id, settings, supervisor, stateDir, version, busyKey, onSave, onTogglePause, onClose }) {
-      const savingWorkers = busyKey === 'settings.maxWorkers'
-      const savingReview = busyKey === 'settings.autoReview'
+    function SettingsPopover(props) {
+      const { t, id, scopeTitle, settings, supervisor, stateDir, version, busyKey, catalog, catalogLoading, catalogError, onSave, onSaveModels, onRefreshModels, onTogglePause, onClose } = props
+      const [minutes, setMinutes] = React.useState(String(settings.autonomy.waitMinutes))
+      const [waitError, setWaitError] = React.useState('')
+      const saveAutonomy = () => {
+        const value = Number(minutes)
+        if (!minutes.trim() || !Number.isInteger(value) || value < 1 || value > 1440) { setWaitError(t('waitInvalid')); return }
+        setWaitError('')
+        onSave({ autonomy: { ...settings.autonomy, waitMinutes: value } })
+      }
+      const savingWorkers = Boolean(busyKey)
+      const savingReview = Boolean(busyKey)
+      const savingModels = Boolean(busyKey)
+      const models = settings.models || { supervisor: null, workers: [] }
+      const selectedWorkers = new Set(models.workers.map(modelKey))
+      const groups = catalog && catalog.available ? catalog.groups : []
+      const configuredSupervisor = models.supervisor
+      const configuredSupervisorKey = modelKey(configuredSupervisor)
+      const supervisorKnown = configuredSupervisor
+        ? groups.some(group => group.id === configuredSupervisor.provider && group.models.some(model => model.id === configuredSupervisor.model))
+        : false
+      const pickSupervisor = key => {
+        if (!key) {
+          onSaveModels({ supervisor: null })
+          return
+        }
+        const group = groups.find(item => key.startsWith(item.id + '/'))
+        if (!group) return
+        onSaveModels({ supervisor: { provider: group.id, model: key.slice(group.id.length + 1) } })
+      }
+      const toggleWorker = (provider, model) => {
+        const key = provider + '/' + model
+        const workers = selectedWorkers.has(key)
+          ? models.workers.filter(item => modelKey(item) !== key)
+          : [...models.workers, { provider, model }]
+        onSaveModels({ workers })
+      }
+      const makeDefault = key => {
+        const entry = models.workers.find(item => modelKey(item) === key)
+        if (!entry) return
+        if (models.workers[0] && modelKey(models.workers[0]) === key) return
+        onSaveModels({ workers: [entry, ...models.workers.filter(item => modelKey(item) !== key)] })
+      }
+      const catalogProblem = catalogError || (catalog && catalog.reason ? catalog.reason : '')
+      const modelStatus = h('span', { className: 'lsa-help' },
+        catalogLoading
+          ? t('modelsLoading')
+          : catalogProblem || (catalog && catalog.available ? '' : t('modelsEmpty')))
       return h('div', { className: 'lsa-popover', id, role: 'dialog', 'aria-label': t('settingsTitle') },
         h('div', { className: 'lsa-popover-head' },
-          h('span', { className: 'lsa-popover-title' }, t('settingsTitle')),
+          h('span', { className: 'lsa-popover-title' }, t('scopedSettings') + ' ' + scopeTitle),
           h('button', { type: 'button', className: 'lsa-iconbtn', onClick: onClose, title: t('close') }, h(Icon, { name: 'close', size: 14 })),
         ),
         h('div', { className: 'lsa-field' },
@@ -1620,15 +1940,101 @@ window.__ModuleLoader__.load({
           onClick: () => onSave({ autoReview: !settings.autoReview }),
         }),
         h(Switch, {
-          checked: settings.paused,
+          checked: settings.paused, disabled: Boolean(busyKey),
           label: t('pause'), hint: t('pausedHint'),
           onClick: onTogglePause,
         }),
+        h(Switch, {
+          checked: settings.autonomy.enabled, disabled: Boolean(busyKey),
+          label: t('autonomy'), hint: t('autonomyHint'),
+          onClick: () => onSave({ autonomy: { ...settings.autonomy, enabled: !settings.autonomy.enabled } }),
+        }),
+        h(Field, { id: 'lsa-autonomy-minutes', label: t('waitMinutes'), error: waitError },
+          h('input', { id: 'lsa-autonomy-minutes', className: 'lsa-input', type: 'number', min: 1, max: 1440, step: 1, value: minutes, disabled: Boolean(busyKey), 'aria-invalid': waitError ? 'true' : 'false', onChange: event => setMinutes(event.target.value) }),
+          h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm', disabled: Boolean(busyKey), onClick: saveAutonomy }, busyKey === 'settings.autonomy' ? h(Spinner, {}) : null, t('save')),
+        ),
+        h('div', { className: 'lsa-popover-sep' }),
+        h('div', { className: 'lsa-field' },
+          h('span', { className: 'lsa-label' }, t('supervisorModel')),
+          h('select', {
+            className: 'lsa-select', value: configuredSupervisorKey,
+            disabled: savingModels || catalogLoading,
+            'aria-label': t('supervisorModel'),
+            onChange: event => pickSupervisor(event.target.value),
+          },
+            h('option', { value: '' }, t('followDefault')),
+            configuredSupervisor && !supervisorKnown
+              ? h('option', { value: configuredSupervisorKey, disabled: true }, configuredSupervisorKey + ' (' + t('modelsUnavailable') + ')')
+              : null,
+            groups.map(group => h('optgroup', { key: group.id, label: group.name },
+              group.models.map(model => h('option', { key: group.id + '/' + model.id, value: group.id + '/' + model.id }, model.name)))),
+          ),
+          catalogLoading || catalogProblem || !(catalog && catalog.available)
+            ? modelStatus
+            : null,
+          h('span', { className: 'lsa-help' }, t('supervisorModelHint')),
+        ),
+        h('div', { className: 'lsa-field' },
+          h('div', { className: 'lsa-label-row' },
+            h('span', { className: 'lsa-label' }, t('workerModels')),
+            h('span', { className: 'lsa-counter' }, String(models.workers.length)),
+          ),
+          catalogLoading
+            ? h('div', { className: 'lsa-model-list' }, h('span', { className: 'lsa-help' }, t('modelsLoading')))
+            : groups.length > 0
+              ? h('div', { className: 'lsa-model-list' },
+                groups.map(group => h('div', { className: 'lsa-model-group', key: group.id },
+                  h('div', { className: 'lsa-model-groupname' }, group.name),
+                  group.models.map(model => {
+                    const key = group.id + '/' + model.id
+                    const checked = selectedWorkers.has(key)
+                    const isDefault = checked && models.workers.length > 0 && modelKey(models.workers[0]) === key
+                    return h('div', { className: 'lsa-model-row', key },
+                      h('label', { className: 'lsa-model-checklabel' },
+                        h('input', {
+                          type: 'checkbox', className: 'lsa-check', checked,
+                          disabled: savingModels,
+                          onChange: () => toggleWorker(group.id, model.id),
+                        }),
+                        h('span', { className: 'lsa-model-name', title: key }, model.name),
+                      ),
+                      isDefault ? h('span', { className: 'lsa-tag' }, t('modelDefaultTag')) : null,
+                      checked && !isDefault
+                        ? h('button', {
+                          type: 'button', className: 'lsa-model-defaultbtn',
+                          disabled: savingModels,
+                          onClick: () => makeDefault(key),
+                        }, t('setAsDefault'))
+                        : null,
+                    )
+                  }),
+                )),
+              )
+              : h('div', { className: 'lsa-model-list' }, modelStatus),
+          h('span', { className: 'lsa-help' }, t('workerModelsHint')),
+          h('div', { className: 'lsa-model-actions' },
+            h('span', { className: 'lsa-help' }, savingModels ? t('savingModels') : ''),
+            h('button', {
+              type: 'button', className: 'lsa-btn lsa-btn-sm',
+              disabled: savingModels || catalogLoading, onClick: onRefreshModels,
+            }, catalogLoading ? h(Spinner, { size: 12 }) : h(Icon, { name: 'refresh', size: 12 }), t('refreshModels')),
+          ),
+        ),
         h('div', { className: 'lsa-meta-list' },
           h('div', { className: 'lsa-meta-line' },
             h('span', null, t('supervisor')),
             h('span', { className: 'lsa-meta-line-value' },
               (supervisor ? (supervisor.running ? t('supervisorRunning') : t('supervisorIdle')) : t('supervisorUnavailable'))),
+          ),
+          h('div', { className: 'lsa-meta-line' },
+            h('span', null, t('supervisorModel')),
+            h('span', { className: 'lsa-meta-line-value' }, configuredSupervisorKey || t('followDefault')),
+          ),
+          h('div', { className: 'lsa-meta-line' },
+            h('span', null, t('scopeModelsLabel')),
+            h('span', { className: 'lsa-meta-line-value' }, models.workers.length > 0
+              ? models.workers.map(modelKey).join(' · ')
+              : t('inheritSupervisor')),
           ),
           h('div', { className: 'lsa-meta-line' },
             h('span', null, t('stateDir')),
@@ -1679,7 +2085,7 @@ window.__ModuleLoader__.load({
     }
 
     function DetailDrawer(props) {
-      const { t, task, log, busyKey, confirmingDelete, onRequestDelete, onCancelDelete, onConfirmDelete, onClose, onAnswer, onRetry, onStop } = props
+      const { t, task, log, logLoading, logError, busyKey, confirmingDelete, onRequestDelete, onCancelDelete, onConfirmDelete, onClose, onAnswer, onRetry, onStop } = props
       const drawerRef = React.useRef(null)
       const [answer, setAnswer] = React.useState('')
       const answerBusy = busyKey === 'answer:' + task.id
@@ -1688,7 +2094,7 @@ window.__ModuleLoader__.load({
       const removeBusy = busyKey === 'remove:' + task.id
       const isRunning = task.status === 'running' || task.status === 'reviewing'
       const canRetry = !isRunning
-      const showAnswer = task.status === 'needs_you'
+      const showAnswer = task.status === 'needs_you' || task.autonomyReviewPending === true
       const entries = Array.isArray(log) ? log : []
 
       React.useEffect(() => {
@@ -1712,6 +2118,7 @@ window.__ModuleLoader__.load({
             h('div', { className: 'lsa-drawer-sub' },
               h(StatusChip, { t, status: task.status }),
               h('span', null, task.workspaceTitle || ''),
+              h('span', { title: task.superagentId || '' }, t('supervisorLabel') + ': ' + task.superagentTitle),
             ),
           ),
           h('button', { type: 'button', className: 'lsa-iconbtn', title: t('closeDetail'), onClick: onClose },
@@ -1721,6 +2128,7 @@ window.__ModuleLoader__.load({
           showAnswer ? h('div', { className: 'lsa-sec' },
             h('div', { className: 'lsa-sec-title' },
               h(Icon, { name: 'help', size: 12 }), t('answerSection')),
+            h('div', { className: 'lsa-help' }, waitingText(task, task.ownerSettings, Date.now(), t)),
             h('div', { className: 'lsa-question' },
               h(Icon, { name: 'help', size: 14 }),
               h('span', { className: 'lsa-question-text' }, (task.question && task.question.text) || t('noQuestion')),
@@ -1757,6 +2165,9 @@ window.__ModuleLoader__.load({
               h('div', { className: 'lsa-kv-item' },
                 h('span', { className: 'lsa-kv-term' }, t('attempts')),
                 h('span', { className: 'lsa-kv-value' }, String(task.attempts || 0))),
+              h('div', { className: 'lsa-kv-item' },
+                h('span', { className: 'lsa-kv-term' }, t('workerModel')),
+                h('span', { className: 'lsa-kv-value' }, task.workerModel ? modelKey(task.workerModel) : t('inheritSupervisor'))),
               h('div', { className: 'lsa-kv-item' },
                 h('span', { className: 'lsa-kv-term' }, t('createdAt')),
                 h('span', { className: 'lsa-kv-value' }, formatTime(task.createdAt))),
@@ -1814,6 +2225,8 @@ window.__ModuleLoader__.load({
           ),
           h('div', { className: 'lsa-sec' },
             h('div', { className: 'lsa-sec-title' }, h(Icon, { name: 'clock', size: 12 }), t('progressLog')),
+            logLoading ? h('span', { className: 'lsa-help', role: 'status' }, t('loading')) : null,
+            logError ? h('span', { className: 'lsa-error-text', role: 'alert' }, logError) : null,
             entries.length === 0
               ? h('span', { className: 'lsa-help' }, t('noProgress'))
               : h('ol', { className: 'lsa-timeline' },
@@ -1847,7 +2260,7 @@ window.__ModuleLoader__.load({
           canRetry ? h('button', {
             type: 'button', className: 'lsa-btn', disabled: retryBusy, onClick: () => onRetry(task.id),
           }, retryBusy ? h(Spinner, { size: 12 }) : h(Icon, { name: 'retry', size: 13 }), t('retryTask')) : null,
-          isRunning ? h('button', {
+          !ENDED_STATUSES.includes(task.status) ? h('button', {
             type: 'button', className: 'lsa-btn', disabled: stopBusy, onClick: () => onStop(task.id),
           }, stopBusy ? h(Spinner, { size: 12 }) : h(Icon, { name: 'stop', size: 13 }), t('stop')) : null,
           h('span', { className: 'lsa-spacer' }),
@@ -1942,12 +2355,12 @@ window.__ModuleLoader__.load({
             h('style', null, css),
             h('div', { className: 'lsa-shell' },
               h('div', { className: 'lsa-empty' },
-                h('div', { className: 'lsa-empty-title' }, '本地 Superagent 面板渲染出错'),
+                h('div', { className: 'lsa-empty-title' }, this.props.t('panelCrashed')),
                 h('div', { className: 'lsa-empty-hint', style: { whiteSpace: 'pre-wrap', textAlign: 'left', maxWidth: '900px', fontFamily: 'ui-monospace, monospace', fontSize: '11px' } }, message),
                 h('button', {
                   type: 'button', className: 'lsa-btn lsa-btn-primary',
                   onClick: () => this.setState({ error: null }),
-                }, '重试'),
+                }, this.props.t('offlineRetry')),
               ),
             ),
           )
@@ -1967,6 +2380,10 @@ window.__ModuleLoader__.load({
       const [refreshing, setRefreshing] = React.useState(true)
       const [busyKey, setBusyKey] = React.useState('')
       const [workspaceId, setWorkspaceId] = React.useState('')
+      const [superagentId, setSuperagentId] = React.useState('')
+      const selectedSuperagent = board?.superagents.find(agent => agent.id === superagentId) || null
+      const selectedSuperagentRef = React.useRef('')
+      selectedSuperagentRef.current = selectedSuperagent?.id || ''
       const [query, setQuery] = React.useState('')
       const [composerOpen, setComposerOpen] = React.useState(false)
       const [addWorkspaceOpen, setAddWorkspaceOpen] = React.useState(false)
@@ -1974,11 +2391,17 @@ window.__ModuleLoader__.load({
       const [settingsOpen, setSettingsOpen] = React.useState(false)
       const [selectedTaskId, setSelectedTaskId] = React.useState('')
       const [detailLog, setDetailLog] = React.useState([])
+      const [detailError, setDetailError] = React.useState('')
+      const [detailLoading, setDetailLoading] = React.useState(false)
       const [confirmDelete, setConfirmDelete] = React.useState(false)
       const [endedFilter, setEndedFilter] = React.useState('all')
       const [answers, setAnswers] = React.useState({})
       const [toasts, setToasts] = React.useState([])
+      const [modelCatalog, setModelCatalog] = React.useState(null)
+      const [modelCatalogLoading, setModelCatalogLoading] = React.useState(false)
+      const [modelCatalogError, setModelCatalogError] = React.useState('')
 
+      const actionInFlightRef = React.useRef(false)
       const inFlightRef = React.useRef(false)
       const dirtyRef = React.useRef(false)
       const mountedRef = React.useRef(true)
@@ -1987,6 +2410,11 @@ window.__ModuleLoader__.load({
       const settingsWrapRef = React.useRef(null)
       const addWorkspaceWrapRef = React.useRef(null)
       const composerRef = React.useRef(null)
+      const newTaskButtonRef = React.useRef(null)
+      const closeComposer = React.useCallback(() => {
+        setComposerOpen(false)
+        newTaskButtonRef.current?.focus({ preventScroll: true })
+      }, [])
       const toastSeq = React.useRef(0)
 
       const dismissToast = React.useCallback(id => {
@@ -2030,6 +2458,8 @@ window.__ModuleLoader__.load({
       const openDetail = React.useCallback(id => {
         lastFocusRef.current = typeof document !== 'undefined' ? document.activeElement : null
         setSelectedTaskId(id)
+        setDetailLog([])
+        setDetailError('')
         setConfirmDelete(false)
       }, [])
 
@@ -2048,6 +2478,8 @@ window.__ModuleLoader__.load({
       }, [])
 
       const runAction = React.useCallback(async (key, action, payload, successKey) => {
+        if (actionInFlightRef.current) return null
+        actionInFlightRef.current = true
         setBusyKey(key)
         try {
           const data = await invoke(action, payload)
@@ -2060,6 +2492,7 @@ window.__ModuleLoader__.load({
           if (info.code === 'offline') setLoadError(info)
           return null
         } finally {
+          actionInFlightRef.current = false
           setBusyKey('')
         }
       }, [pushToast, t])
@@ -2113,19 +2546,64 @@ window.__ModuleLoader__.load({
       }, [runAction, t])
 
       const saveSettings = React.useCallback(async patch => {
-        const key = patch.maxWorkers !== undefined ? 'settings.maxWorkers' : 'settings.autoReview'
-        return Boolean(await runAction(key, 'settings.save', patch, 'settingsSaved'))
-      }, [runAction])
+        if (!selectedSuperagent) return false
+        const key = patch.models !== undefined ? 'settings.models'
+          : patch.maxWorkers !== undefined ? 'settings.maxWorkers' : patch.autonomy !== undefined ? 'settings.autonomy' : 'settings.autoReview'
+        return Boolean(await runAction(key, 'settings.save', { ...patch, superagentId: selectedSuperagent.id }, 'settingsSaved'))
+      }, [runAction, selectedSuperagent])
+
+      const addSuperagent = async payload => {
+        const result = await runAction('superagent.add', 'superagent.add', payload, 'superagentSaved')
+        if (result?.superagent?.id) { setWorkspaceId(result.superagent.workspaceId); setSuperagentId(result.superagent.id) }
+        return Boolean(result)
+      }
+      const renameSuperagent = payload => runAction('superagent.update', 'superagent.update', payload, 'superagentSaved')
+      const removeSuperagent = async id => {
+        const result = await runAction('superagent.remove', 'superagent.remove', { id }, 'superagentRemoved')
+        if (result) { setSuperagentId(''); setSettingsOpen(false) }
+        return Boolean(result)
+      }
+
+      const loadModelCatalog = React.useCallback(async () => {
+        const requestedId = superagentId
+        if (!requestedId || !selectedSuperagentRef.current) return null
+        setModelCatalogLoading(true)
+        setModelCatalogError('')
+        try {
+          const data = await invoke('models.catalog', { superagentId: requestedId })
+          if (!mountedRef.current || selectedSuperagentRef.current !== requestedId) return null
+          const catalog = normalizeModelCatalog(data)
+          setModelCatalog(catalog)
+          return catalog
+        } catch (error) {
+          if (!mountedRef.current || selectedSuperagentRef.current !== requestedId) return null
+          setModelCatalog(null)
+          setModelCatalogError(errorText(t, errorInfo(error)) || t('modelsUnavailable'))
+          return null
+        } finally {
+          if (mountedRef.current && selectedSuperagentRef.current === requestedId) setModelCatalogLoading(false)
+        }
+      }, [t, superagentId])
+
+      React.useEffect(() => {
+        setModelCatalog(null); setModelCatalogError(''); setModelCatalogLoading(false); setSettingsOpen(false)
+      }, [superagentId])
+
+      const saveModels = React.useCallback(async patch => (
+        Boolean(await saveSettings({ models: patch }))
+      ), [saveSettings])
 
       const togglePause = React.useCallback(async () => {
-        if (!board || !board.settings) return
-        const nextPaused = !board.settings.paused
-        await runAction('settings.pause', 'settings.save', { paused: nextPaused }, nextPaused ? 'pausedNotice' : 'resumedNotice')
-      }, [board, runAction])
+        if (!selectedSuperagent || busyKey) return
+        const nextPaused = !selectedSuperagent.settings.paused
+        await runAction('settings.pause', 'settings.save', { superagentId: selectedSuperagent.id, paused: nextPaused }, nextPaused ? 'pausedNotice' : 'resumedNotice')
+      }, [selectedSuperagent, busyKey, runAction])
 
       const handleAnswerChange = React.useCallback((id, value) => {
-        setAnswers(current => ({ ...current, [id]: value }))
-      }, [])
+        const task = board?.tasks.find(item => item.id === id)
+        if (!task) return
+        setAnswers(current => ({ ...current, [id]: { text: value, questionKey: questionKey(task) } }))
+      }, [board])
 
       React.useEffect(() => {
         mountedRef.current = true
@@ -2170,17 +2648,25 @@ window.__ModuleLoader__.load({
       }, [loadBoard])
 
       React.useEffect(() => {
+        if (!settingsOpen) return
+        loadModelCatalog()
+      }, [settingsOpen, loadModelCatalog])
+
+      React.useEffect(() => {
         if (!selectedTaskId) {
           setDetailLog([])
           return undefined
         }
         let cancelled = false
+        setDetailLoading(true)
+        setDetailError('')
         invoke('task.get', { id: selectedTaskId })
           .then(data => {
             if (cancelled) return
             setDetailLog(Array.isArray(data && data.log) ? data.log : [])
           })
-          .catch(() => { /* the next board poll retries */ })
+          .catch(error => { if (!cancelled) setDetailError(errorText(t, errorInfo(error))) })
+          .finally(() => { if (!cancelled) setDetailLoading(false) })
         return () => { cancelled = true }
       }, [selectedTaskId, board])
 
@@ -2203,7 +2689,7 @@ window.__ModuleLoader__.load({
             closeDetail()
             return
           }
-          if (composerOpen) setComposerOpen(false)
+          if (composerOpen) closeComposer()
         }
         document.addEventListener('keydown', onKeyDown)
         return () => document.removeEventListener('keydown', onKeyDown)
@@ -2243,32 +2729,34 @@ window.__ModuleLoader__.load({
         if (!board.tasks.some(task => task.id === selectedTaskId)) closeDetail()
       }, [board, selectedTaskId, closeDetail])
 
-      const openComposer = React.useCallback(() => {
-        setComposerOpen(true)
-        if (composerRef.current && typeof composerRef.current.scrollIntoView === 'function') {
-          try { composerRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' }) } catch (error) { /* ignore */ }
-        }
-      }, [])
+      const openComposer = React.useCallback(() => { setComposerOpen(true) }, [])
+      React.useEffect(() => {
+        if (composerOpen) composerRef.current?.scrollIntoView?.({ block: 'nearest' })
+      }, [composerOpen])
 
       const workspaces = board ? board.workspaces : []
-      const tasks = board ? board.tasks : []
+      const tasks = board ? board.tasks.map(task => ({ ...task, superagentTitle: ownerTitle(task, board.superagents, t), ownerSettings: board.superagents.find(agent => agent.id === task.superagentId)?.settings })) : []
+      // Bind drafts to the actual question, not just the task: a new question must
+      // never display or submit an answer drafted for the previous one. The render
+      // guard applies immediately, even before polling effects could run.
+      const visibleAnswers = Object.fromEntries(Object.entries(answers).filter(([id, draft]) => tasks.some(task => task.id === id && draft.questionKey === questionKey(task))).map(([id, draft]) => [id, draft.text]))
       const selectedTask = selectedTaskId ? tasks.find(task => task.id === selectedTaskId) || null : null
-      const scoped = workspaceId ? tasks.filter(task => task.workspaceId === workspaceId) : tasks
+      const scoped = scopeTasks(tasks, workspaceId, selectedSuperagent?.id || '')
       const keyword = query.trim().toLowerCase()
       const filtered = keyword
         ? scoped.filter(task => [task.title, task.goal, task.workspaceTitle, task.workspacePath]
           .filter(Boolean).join(' ').toLowerCase().includes(keyword))
         : scoped
       const queuedTasks = filtered.filter(task => task.status === 'queued').sort(byPriorityThenUpdated)
-      const runningTasks = filtered.filter(task => task.status === 'running' || task.status === 'reviewing').sort(byPriorityThenUpdated)
-      const needsTasks = filtered.filter(task => task.status === 'needs_you').sort(byPriorityThenUpdated)
+      const runningTasks = filtered.filter(task => ['running', 'reviewing', 'needs_you'].includes(task.status)).sort((left, right) => Number(right.status === 'needs_you') - Number(left.status === 'needs_you') || byPriorityThenUpdated(left, right))
+      const needsTasks = filtered.filter(task => task.status === 'needs_you' || task.autonomyReviewPending === true).sort(byPriorityThenUpdated)
       const endedTasks = filtered.filter(task => ENDED_STATUSES.includes(task.status)).sort((left, right) => (right.updatedAt || 0) - (left.updatedAt || 0))
       const endedVisible = endedFilter === 'all' ? endedTasks : endedTasks.filter(task => task.status === endedFilter)
       const hasWorkspaces = workspaces.length > 0
       const hasTasks = tasks.length > 0
       const allSettled = hasWorkspaces && hasTasks && queuedTasks.length === 0 && runningTasks.length === 0 && needsTasks.length === 0
       const now = Date.now()
-      const live = board ? board.live : { running: 0, queued: 0, needsYou: 0, done: 0 }
+      const live = { running: scoped.filter(task => task.status === 'running').length, reviewing: scoped.filter(task => task.status === 'reviewing').length, queued: scoped.filter(task => task.status === 'queued').length, needsYou: scoped.filter(task => task.status === 'needs_you').length, done: scoped.filter(task => task.status === 'done').length }
 
       const endedEmptyText = keyword
         ? t('noSearchResultsHint')
@@ -2324,31 +2812,41 @@ window.__ModuleLoader__.load({
         h('div', { className: 'lsa-shell' },
           h(Topbar, {
             t,
-            board,
+            board: board && { ...board, settings: selectedSuperagent?.settings || null, supervisor: selectedSuperagent?.supervisor || null },
+            scopeTitle: selectedSuperagent?.title,
+            busy: Boolean(busyKey),
             refreshing,
             settingsOpen,
             addWorkspaceOpen,
             settingsWrapRef,
             settingsPopoverId,
             newTaskActive: composerOpen,
+            newTaskButtonRef,
             onNewTask: openComposer,
             onTogglePause: togglePause,
-            onToggleSettings: () => setSettingsOpen(current => !current),
+            onToggleSettings: () => { if (selectedSuperagent) setSettingsOpen(current => !current) },
             onRefresh: () => { loadBoard() },
-            settingsPopover: board ? h(SettingsPopover, {
+            settingsPopover: board && selectedSuperagent ? h(SettingsPopover, {
+              key: selectedSuperagent.id,
+              scopeTitle: selectedSuperagent.title,
               t,
               id: settingsPopoverId,
-              settings: board.settings,
-              supervisor: board.supervisor,
+              settings: selectedSuperagent.settings,
+              supervisor: selectedSuperagent.supervisor,
               stateDir: board.stateDir,
               version: board.version,
               busyKey,
+              catalog: modelCatalog,
+              catalogLoading: modelCatalogLoading,
+              catalogError: modelCatalogError,
               onSave: saveSettings,
+              onSaveModels: saveModels,
+              onRefreshModels: loadModelCatalog,
               onTogglePause: togglePause,
               onClose: () => setSettingsOpen(false),
             }) : null,
           }),
-          board && board.settings.paused
+          selectedSuperagent?.settings.paused
             ? h('div', { className: 'lsa-banner lsa-banner-warn', role: 'status' },
               h(Icon, { name: 'pause', size: 14 }),
               h('span', null, t('pausedHint')),
@@ -2374,7 +2872,7 @@ window.__ModuleLoader__.load({
                 t,
                 workspaces,
                 selected: workspaceId,
-                onSelect: id => { setWorkspaceId(id); setEndedFilter('all') },
+                onSelect: id => { setWorkspaceId(id); setSuperagentId(''); setSettingsOpen(false); setEndedFilter('all') },
                 addOpen: addWorkspaceOpen,
                 onToggleAdd: () => { setAddWorkspaceOpen(current => !current); setSettingsOpen(false) },
                 addWrapRef: addWorkspaceWrapRef,
@@ -2397,6 +2895,7 @@ window.__ModuleLoader__.load({
               h(SearchBox, { t, value: query, onChange: setQuery }),
             )
             : null,
+          board ? h(SuperagentManager, { key: workspaceId + ':' + (selectedSuperagent?.id || ''), t, board, workspaceId, selectedId: selectedSuperagent?.id || '', onSelect: id => { setSuperagentId(id); setSettingsOpen(false) }, busy: Boolean(busyKey), onAdd: addSuperagent, onRename: renameSuperagent, onRemove: removeSuperagent }) : null,
           !board && !loadError ? h(LoadingSkeleton, { t }) : null,
           !board && loadError
             ? h(EmptyState, {
@@ -2412,26 +2911,18 @@ window.__ModuleLoader__.load({
           board
             ? h('div', { className: 'lsa-layout', 'data-detail': selectedTask ? 'true' : 'false' },
               h('div', { className: 'lsa-main-col' },
-                needsTasks.length > 0 ? h(NeedsPanel, {
-                  t,
-                  tasks: needsTasks,
-                  answers,
-                  busyKey,
-                  onAnswerChange: handleAnswerChange,
-                  onSubmitAnswer: answerTask,
-                  onRetry: retryTask,
-                  onStop: stopTask,
-                  onOpen: openDetail,
-                }) : null,
+                needsTasks.length > 0 ? h(AttentionPanel, { t, tasks: needsTasks, answers: visibleAnswers, busyKey, now, onAnswerChange: handleAnswerChange, onAnswer: answerTask, onOpen: openDetail }) : null,
                 hasWorkspaces
-                  ? h('div', { ref: composerRef },
+                  ? h('div', { ref: composerRef, style: { display: composerOpen ? 'block' : 'contents' } },
                     h(TaskComposer, {
                       t,
                       workspaces,
+                      superagents: board.superagents,
+                      defaultSuperagentId: selectedSuperagent?.id || '',
                       defaultWorkspaceId: workspaceId || (workspaces[0] ? workspaces[0].id : ''),
                       busyKey,
                       open: composerOpen,
-                      onToggle: () => setComposerOpen(current => !current),
+                      onToggle: closeComposer,
                       onSubmit: addTask,
                     }))
                   : null,
@@ -2467,6 +2958,8 @@ window.__ModuleLoader__.load({
                   t,
                   task: selectedTask,
                   log: detailLog,
+                  logLoading: detailLoading,
+                  logError: detailError,
                   busyKey,
                   confirmingDelete: confirmDelete,
                   onRequestDelete: () => setConfirmDelete(true),
@@ -2495,7 +2988,7 @@ window.__ModuleLoader__.load({
       apply(ctx) {
         ctx.effect(() => ctx.locale.register(NS, dictionaries))
         const bound = ctx.locale.bind(NS)
-        const Panel = props => h(PanelBoundary, null, h(Page, { ...props, t: bound }))
+        const Panel = props => h(PanelBoundary, { t: bound }, h(Page, { ...props, t: bound }))
         ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: PANEL_ID, locale: NS, inject: () => ({}) }, Panel))
         ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({
           name: 'sidebar.panellist', id: PANEL_ID, order: 15, label: () => bound('panel'), locale: NS,

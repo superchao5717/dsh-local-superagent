@@ -46,7 +46,7 @@ const sample = (overrides = {}) => ({
 test('store: missing / empty / bad JSON files load defaults instead of throwing', async () => {
   const missing = await makeStore(() => {})
   await missing.store.load()
-  assert.deepEqual(missing.store.settings, { paused: false, maxWorkers: 2, autoReview: true })
+  assert.deepEqual(missing.store.settings, { paused: false, maxWorkers: 2, autoReview: true, models: { supervisor: null, workers: [] }, autonomy: { enabled: false, waitMinutes: 30 } })
   assert.deepEqual(missing.store.list(), [])
 
   const empty = await makeFile()
@@ -55,7 +55,7 @@ test('store: missing / empty / bad JSON files load defaults instead of throwing'
   const emptyStore = new Store({ file: empty.file, log: message => emptyLogs.push(message) })
   stores.push(emptyStore)
   await emptyStore.load()
-  assert.deepEqual(emptyStore.settings, { paused: false, maxWorkers: 2, autoReview: true })
+  assert.deepEqual(emptyStore.settings, { paused: false, maxWorkers: 2, autoReview: true, models: { supervisor: null, workers: [] }, autonomy: { enabled: false, waitMinutes: 30 } })
   assert.deepEqual(emptyStore.list(), [])
   assert.ok(emptyLogs.some(message => message.includes('could not read')))
 
@@ -65,7 +65,7 @@ test('store: missing / empty / bad JSON files load defaults instead of throwing'
   const badStore = new Store({ file: bad.file, log: message => badLogs.push(message) })
   stores.push(badStore)
   await badStore.load()
-  assert.deepEqual(badStore.settings, { paused: false, maxWorkers: 2, autoReview: true })
+  assert.deepEqual(badStore.settings, { paused: false, maxWorkers: 2, autoReview: true, models: { supervisor: null, workers: [] }, autonomy: { enabled: false, waitMinutes: 30 } })
   assert.deepEqual(badStore.list(), [])
   assert.ok(badLogs.some(message => message.includes('could not read')))
 })
@@ -166,6 +166,38 @@ test('store: settings are clamped and only booleans change booleans', async () =
   assert.equal(store.settings.maxWorkers, 3)
 })
 
+test('store: model settings and a task worker model are normalized and round-trip', async () => {
+  const { store } = await makeStore()
+  const settings = store.setSettings({
+    models: {
+      supervisor: { provider: ' deepseek-account ', model: ' deepseek-flash ', reasoningEffort: ' max ' },
+      workers: [
+        { provider: 'p', model: 'a' },
+        { provider: 'p', model: 'a' },
+        { provider: 'q', model: 'b', extra: 1 },
+        { provider: '', model: 'x' },
+        'nope',
+      ],
+    },
+  })
+  assert.deepEqual(settings.models, {
+    supervisor: { provider: 'deepseek-account', model: 'deepseek-flash', reasoningEffort: 'max' },
+    workers: [{ provider: 'p', model: 'a' }, { provider: 'q', model: 'b' }],
+  })
+  const detached = store.settings
+  detached.models.workers.push({ provider: 'z', model: 'z' })
+  detached.models.supervisor.model = 'changed'
+  assert.equal(store.settings.models.workers.length, 2)
+  assert.equal(store.settings.models.supervisor.model, 'deepseek-flash')
+
+  const task = store.add(sample())
+  assert.equal(task.workerModel, null)
+  store.update(task.id, { workerModel: { provider: 'p', model: 'a', reasoningEffort: 2 } })
+  assert.deepEqual(store.get(task.id).workerModel, { provider: 'p', model: 'a' })
+  store.update(task.id, { workerModel: null })
+  assert.equal(store.get(task.id).workerModel, null)
+})
+
 test('store: flush writes atomically and a reload round-trips every persisted field', async () => {
   const { dir, file, store } = await makeStore()
   const first = store.add(sample({ title: 'first', goal: 'one' }))
@@ -183,7 +215,7 @@ test('store: flush writes atomically and a reload round-trips every persisted fi
       at: 333,
     },
     review: { verdict: 'needs_you', note: 'ask user', at: 444 },
-    question: { text: 'Which option?', at: 555 },
+    question: { text: 'Which option?', at: 555, requiresHuman: true },
     reviewRounds: 2,
   })
   store.log(first.id, 'custom', 'log text')

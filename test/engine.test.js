@@ -220,7 +220,7 @@ test('engine: applyReview maps done / fail / needs_you onto the task status', as
   assert.equal(store.get(queued.id).status, 'queued')
 })
 
-test('engine: continue resumes the worker and more than two rounds forces needs_you', async () => {
+test('engine: continue queues under pause and more than two rounds forces needs_you', async () => {
   const { engine, store, sessions } = await setup()
   const task = seed(store, { status: 'reviewing', startedAt: Date.now() - 1000, report: report() })
   const result = engine.applyReview({
@@ -231,7 +231,7 @@ test('engine: continue resumes the worker and more than two rounds forces needs_
   })
   assert.equal(result.verdict, 'continue')
   const after = store.get(task.id)
-  assert.equal(after.status, 'running')
+  assert.equal(after.status, 'queued')
   assert.equal(after.reviewRounds, 1)
   assert.equal(after.report, null)
   assert.equal(after.question, null)
@@ -239,11 +239,14 @@ test('engine: continue resumes the worker and more than two rounds forces needs_
   assert.equal(after.review.verdict, 'continue')
   assert.equal(after.review.note, 'one more step')
   assert.equal(after.progress.at(-1).text, '主管要求继续一步')
+  assert.equal(sessions.calls.some(call => call.name === 'prompt'), false)
+  store.setSettings({ paused: false })
+  await engine.pump()
   assert.ok(await waitFor(() => sessions.calls.some(call => call.name === 'prompt')))
   const prompt = sessions.calls.find(call => call.name === 'prompt')
   assert.match(prompt.text, /Fix the failing test/)
   assert.match(prompt.text, /continue_instruction/)
-  assert.equal(prompt.sessionId, task.workerSessionId)
+  assert.equal(prompt.sessionId, store.get(task.id).workerSessionId)
 
   const capped = seed(store, { status: 'reviewing', reviewRounds: 2, report: report() })
   const cappedResult = engine.applyReview({ task_id: capped.id, verdict: 'continue', note: 'again' })
@@ -460,4 +463,118 @@ test('engine: board/taskDetail expose the contract projection without internal l
   assert.ok(Array.isArray(detail.log))
   assert.equal(detail.workerSessionId, running.workerSessionId)
   assert.equal(engine.taskDetail('missing'), undefined)
+})
+
+const CATALOG = {
+  default: { provider: 'p', model: 'fast' },
+  groups: [
+    { id: 'p', name: 'Provider P', models: [{ id: 'fast', name: 'Fast' }, { id: 'smart', name: 'Smart' }] },
+    { id: 'q', name: 'Provider Q', models: [{ id: 'big', name: 'Big' }] },
+  ],
+  failures: [],
+}
+
+test('engine: model settings are validated against the Host catalog and retarget the supervisor', async () => {
+  const { engine, store, sessions } = await setup({
+    services: { sessionController: { modelCatalog: async () => CATALOG } },
+  })
+  const saved = await engine.saveSettings({
+    models: {
+      supervisor: { provider: 'p', model: 'fast' },
+      workers: [{ provider: 'p', model: 'smart' }, { provider: 'q', model: 'big' }],
+    },
+  })
+  assert.deepEqual(saved.settings.models, {
+    supervisor: { provider: 'p', model: 'fast' },
+    workers: [{ provider: 'p', model: 'smart' }, { provider: 'q', model: 'big' }],
+  })
+  assert.ok(sessions.calls.some(call => call.name === 'applyModel' && call.sessionId === engine.supervisorId))
+  assert.ok(store.data.events.some(event => event.type === 'settings.saved'))
+
+  const invalid = await engine.saveSettings({ models: { supervisor: { provider: 'p', model: 'nope' } } })
+  assert.equal(invalid.error, 'invalid_model')
+  assert.match(invalid.message, /p\/nope/)
+  assert.deepEqual(store.settings.models.supervisor, { provider: 'p', model: 'fast' })
+
+  // A partial patch keeps the fields it does not mention.
+  const partial = await engine.saveSettings({ models: { supervisor: null } })
+  assert.equal(partial.settings.models.supervisor, null)
+  assert.equal(partial.settings.models.workers.length, 2)
+
+  const catalog = await engine.modelCatalog()
+  assert.equal(catalog.available, true)
+  assert.equal(catalog.groups.length, 2)
+  assert.deepEqual(catalog.models, partial.settings.models)
+})
+
+test('engine: model catalog reports unavailable when the Host has no model service', async () => {
+  const { engine } = await setup()
+  const catalog = await engine.modelCatalog()
+  assert.equal(catalog.available, false)
+  assert.deepEqual(catalog.groups, [])
+  assert.match(catalog.reason, /模型目录/)
+  const saved = await engine.saveSettings({ models: { workers: [{ provider: 'x', model: 'y' }] } })
+  assert.deepEqual(saved.settings.models.workers, [{ provider: 'x', model: 'y' }])
+})
+
+test('engine: workers run on the first configured model, and a task override must stay in range', async () => {
+  const { engine, store, sessions } = await setup()
+  store.setSettings({
+    models: { workers: [{ provider: 'p', model: 'fast' }, { provider: 'q', model: 'big' }] },
+  })
+
+  const first = seed(store, { status: 'queued' })
+  await engine.dispatch(first.id)
+  assert.deepEqual(store.get(first.id).workerModel, { provider: 'p', model: 'fast' })
+  const firstEnsure = sessions.calls.find(call => call.name === 'ensure' && call.sessionId === store.get(first.id).workerSessionId)
+  assert.deepEqual(firstEnsure.options.model, { provider: 'p', model: 'fast' })
+  assert.match(store.get(first.id).log.at(-1).text, /p\/fast/)
+
+  const overridden = seed(store, { status: 'queued', workerModel: { provider: 'q', model: 'big' } })
+  await engine.dispatch(overridden.id)
+  assert.deepEqual(store.get(overridden.id).workerModel, { provider: 'q', model: 'big' })
+
+  const stale = seed(store, { status: 'queued', workerModel: { provider: 'z', model: 'gone' } })
+  await engine.dispatch(stale.id)
+  assert.deepEqual(store.get(stale.id).workerModel, { provider: 'p', model: 'fast' })
+})
+
+test('engine: the supervisor may switch the worker model only within the configured range', async () => {
+  const { engine, store, sessions } = await setup()
+  store.setSettings({
+    models: { workers: [{ provider: 'p', model: 'fast' }, { provider: 'q', model: 'big' }] },
+  })
+  const task = seed(store, {
+    status: 'reviewing',
+    startedAt: Date.now() - 1000,
+    workerModel: { provider: 'p', model: 'fast' },
+    report: report(),
+  })
+
+  const rejected = engine.applyReview({
+    task_id: task.id,
+    verdict: 'continue',
+    continue_instruction: 'try again',
+    worker_model: 'q/huge',
+  })
+  assert.equal(rejected.ok, false)
+  assert.match(rejected.error, /工作代理模型范围/)
+  assert.equal(store.get(task.id).status, 'reviewing')
+
+  const accepted = engine.applyReview({
+    task_id: task.id,
+    verdict: 'continue',
+    continue_instruction: 'try again',
+    worker_model: 'q/big',
+  })
+  assert.equal(accepted.verdict, 'continue')
+  assert.deepEqual(store.get(task.id).workerModel, { provider: 'q', model: 'big' })
+  assert.ok(store.get(task.id).log.some(entry => entry.kind === 'review' && entry.text.includes('q/big')))
+  assert.ok(store.get(task.id).progress.some(entry => entry.text.includes('q/big')))
+  assert.equal(store.get(task.id).status, 'queued')
+  store.setSettings({ paused: false })
+  await engine.pump()
+  assert.ok(await waitFor(() => sessions.calls.some(call => (
+    call.name === 'ensure' && call.options.model && call.options.model.provider === 'q'
+  ))))
 })
