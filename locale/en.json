@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Local Superagent",
+    "description": "A local task board whose superagent takes tasks in your DSH workspaces, dispatches them to worker Sessions, reviews the results and only interrupts you for a real decision."
+  }
+}

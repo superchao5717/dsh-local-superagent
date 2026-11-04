@@ -1,0 +1,7 @@
+# Local Superagent bundle layer: one Host plugin that owns the task ledger, the
+# dispatcher and the supervisor/worker Sessions, plus its Client half (sidebar
+# entry + main panel) through package.json `dsh.client`.
+- insert:
+    - id: dsh-local-superagent
+      name: '@local/dsh-local-superagent'
+      config: {}

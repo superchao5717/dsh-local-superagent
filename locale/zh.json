@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "本地 Superagent",
+    "description": "本地任务看板：Superagent 接住你在各 DSH 工作区布置的任务，自动派发给执行会话、审查结果并推进，只在真正需要你决定时才打扰。"
+  }
+}
