@@ -17,6 +17,7 @@ const contractActions = [
   'task.add',
   'task.get',
   'task.answer',
+  'task.followup',
   'task.retry',
   'task.stop',
   'task.remove',
@@ -60,7 +61,7 @@ function clientHarness(initialStates = [], environment = {}) {
     ...environment,
   }
   vm.createContext(context)
-  const instrumented = source.replace("    return {\n      inject:", "    globalThis.clientTest = { normalizeBoard, normalizeSettings, ownerTitle, waitingText, scopeTasks, createAttachmentManager, uploadAttachment, attachmentEvents, attachmentContext, answerBucket, AttachmentPicker, SavedAttachments, TaskCard, Topbar, TaskEntry, shortModelLabel, AttentionPanel, TaskComposer, SettingsPopover, DetailDrawer, Page, SuperagentManager, dictionaries };\n    return {\n      inject:")
+  const instrumented = source.replace("    return {\n      inject:", "    globalThis.clientTest = { normalizeBoard, normalizeSettings, ownerTitle, waitingText, scopeTasks, createAttachmentManager, uploadAttachment, attachmentEvents, attachmentContext, answerBucket, AttachmentPicker, SavedAttachments, FollowupComposer, TaskCard, Topbar, TaskEntry, shortModelLabel, AttentionPanel, TaskComposer, SettingsPopover, DetailDrawer, Page, SuperagentManager, dictionaries };\n    return {\n      inject:")
   vm.runInContext(instrumented, context, { filename: clientPath })
   module.factory(name => { assert.equal(name, 'react'); return React })
   return {
@@ -77,6 +78,22 @@ function nodes(tree) {
 function component(tree, name) { return nodes(tree).find(node => node.type?.name === name) }
 function text(tree) { return Array.isArray(tree) ? tree.map(text).join(' ') : tree && typeof tree === 'object' ? text(tree.props?.children) : String(tree ?? '') }
 const plain = value => JSON.parse(JSON.stringify(value))
+
+test('client: followup composer is available on active and ended details and submits text with attachments', async () => {
+  const harness = clientHarness(), sent = []
+  const props = { t: key => key, task: { id: 'source', attachments: [] }, busyKey: '', onFollowup: async (...args) => { sent.push(args); return true } }
+  let tree = harness.render('FollowupComposer', props)
+  nodes(tree).find(node => node.type === 'textarea').props.onChange({ target: { value: 'New goal' } })
+  tree = harness.render('FollowupComposer', props)
+  await nodes(tree).find(node => node.type === 'button').props.onClick()
+  assert.deepEqual(sent, [['source', 'New goal']])
+  tree = harness.render('FollowupComposer', props)
+  assert.equal(nodes(tree).find(node => node.type === 'textarea').props.value, '')
+  for (const status of ['running', 'done', 'failed', 'cancelled']) {
+    const drawer = harness.render('DetailDrawer', { ...props, task: { ...props.task, status }, log: [] })
+    assert.ok(component(drawer, 'FollowupComposer'))
+  }
+})
 
 function localeKeys(language) {
   const marker = `\n      ${language}: {`

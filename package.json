@@ -1,6 +1,6 @@
 {
   "name": "@local/dsh-local-superagent",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "type": "module",
   "description": "Local Superagent: a workspace task board where a superagent dispatches, reviews and advances tasks on its own, with minimal user interruption.",

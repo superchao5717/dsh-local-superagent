@@ -10,16 +10,24 @@ This is not an official DeepSeek product or a fork of the upstream prototype. It
 
 Requires Node.js >= 22 and DSH. Real-instance validation is limited to **Windows / DSH 0.2.1-rc.5**; other platforms and DSH versions have not been validated in a real instance.
 
-- **DSH Desktop:** choose **Add plugin** on the plugins page and enter `github:superchao5717/dsh-local-superagent#v0.5.0` in the package/address field to pin the version. See the [v0.5.0 Release](https://github.com/superchao5717/dsh-local-superagent/releases/tag/v0.5.0) for its package assets. Electron manages the Desktop profile; do not manage it with Web CLI commands.
+- **DSH Desktop:** choose **Add plugin** on the plugins page and enter `github:superchao5717/dsh-local-superagent#v0.6.0` in the package/address field to pin the version. See the [v0.6.0 Release](https://github.com/superchao5717/dsh-local-superagent/releases/tag/v0.6.0) for its package assets. Electron manages the Desktop profile; do not manage it with Web CLI commands.
 - **DSH Web:** run this in the environment hosting DSH Web (`--profile` comes before `add`):
 
   ```sh
-  dsh plugin --profile web add github:superchao5717/dsh-local-superagent#v0.5.0
+  dsh plugin --profile web add github:superchao5717/dsh-local-superagent#v0.6.0
   ```
 
 Do not edit profile bundles or dependency lists manually. The package name stays `@local/dsh-local-superagent` for existing-profile compatibility; it is not restricted to local installation.
 
 The package remains `private: true`: distribution is through GitHub source and Release `.tgz`, not npm publication. Runtime files are JavaScript and need no build step. Check the [Releases page](https://github.com/superchao5717/dsh-local-superagent/releases) for available assets.
+
+## 0.6.0: follow-up requirements / new sessions
+
+Open any active or ended task and use **Follow up · New session** to submit text and/or images, videos or files. This creates a linked, independently queued task with the same supervisor/workspace, inherited attachments and a snapshot of prior goals/reports. The original task is not interrupted or changed. File picking, local paste/drop and Ctrl/⌘+Enter are supported; pending or failed uploads block submission.
+
+Snapshots are not full chat history and do not track later source-task changes. Up to eight linked context levels are supported. Running tasks share disk access: avoid concurrent writes to the same files. Ordinary decision answers still use the existing answer entry. Closing details discards the follow-up text draft; attachment drafts are page-local.
+
+Validation: 107 automated tests and 11 runtime syntax checks passed. The local UI entry was confirmed on Windows / DSH 0.2.2-rc.1 and the user confirmed their local update. A full live-model attachment-to-linked-task review cycle has not been revalidated for this release.
 
 ## 0.5.0: task attachments and supervisor-first selection
 

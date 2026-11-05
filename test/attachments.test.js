@@ -82,6 +82,36 @@ async function setup(t, limits) {
   return { ...fixture, dir, store, agents, ctx, sessions, engine, manager: engine.attachments, a, b, add, ask }
 }
 
+test('followup: native attachments inherit, new uploads are atomic, snapshot persists and new session gets fresh receipts', async t => {
+  const { manager, engine, store, add, sessions, dir } = await setup(t)
+  const initial = await manager.upload(request({ name: 'old.txt' }))
+  const source = add([initial.uploadId]).task
+  const upload = await manager.upload(request({ name: 'new.mp4' }))
+  const api = new Api({ engine, log: () => {} })
+  const result = await api.handle({ action: 'task.followup', id: source.id, text: '', attachments: [upload.uploadId] })
+  assert.equal(result.ok, true)
+  const child = result.data.task
+  assert.equal(child.attachments.length, 2)
+  assert.equal(store.get(source.id).attachments.length, 1)
+  assert.equal(engine.followup(source.id, { text: 'reuse', attachments: [upload.uploadId] }).error, 'attachment_expired')
+  const valid = await manager.upload(request())
+  const count = store.list().length
+  assert.equal(engine.followup(source.id, { text: 'x', attachments: [valid.uploadId, 'bad'] }).error, 'attachment_expired')
+  assert.ok(manager.uploads.has(valid.uploadId)); assert.equal(store.list().length, count)
+  await store.flush()
+  const loaded = await new Store({ file: join(dir, 'board.json') }).load()
+  assert.equal(loaded.get(child.id).parentTaskId, source.id)
+  assert.deepEqual(loaded.get(child.id).followupContext, store.get(child.id).followupContext)
+  await loaded.close()
+  store.setSettings({ paused: false, maxWorkers: 2 })
+  await engine.pump()
+  const prompts = sessions.calls.filter(call => call.name === 'prompt')
+  assert.equal(prompts.length, 2)
+  assert.notEqual(prompts[0].sessionId, prompts[1].sessionId)
+  assert.match(prompts.find(call => call.text.includes(child.id)).text, /prior_task_context/)
+  assert.notEqual(prompts[0].attachmentParts[0].receiptId, prompts[1].attachmentParts[0].receiptId)
+})
+
 test('attachments: raw upload uses native CAS, returns metadata only and new-task tokens survive supervisor selection', async t => {
   const { manager, engine, b, add, native } = await setup(t)
   const file = await manager.upload(request({ name: '../../safe.html', bytes: Buffer.from('<script>unsafe</script>') }))

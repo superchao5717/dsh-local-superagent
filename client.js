@@ -1448,7 +1448,7 @@ window.__ModuleLoader__.load({
           notify()
         },
         reconcile(tasks) {
-          const valid = new Set(tasks.filter(task => task.status === 'needs_you' || task.autonomyReviewPending).map(answerBucket))
+          const valid = new Set([...tasks.map(task => 'followup:' + task.id), ...tasks.filter(task => task.status === 'needs_you' || task.autonomyReviewPending).map(answerBucket)])
           for (const key of buckets.keys()) if (key !== 'new-task' && !valid.has(key)) manager.clear(key)
         },
         dispose() { alive = false; for (const bucket of buckets.values()) bucket.items.forEach(release); buckets.clear() },
@@ -2352,6 +2352,39 @@ window.__ModuleLoader__.load({
       return labels[kind] ? t(labels[kind]) : kind
     }
 
+    Object.assign(dictionaries.zh, {
+      followup: '补充要求 · 新会话', followupHint: '基于当前任务快照新建关联任务，保留原附件；原任务不会停止或修改。进行中的任务共享工作区，请避免并行改同一文件。',
+      followupPlaceholder: '继续追问、修改要求，或附上新素材…', followupSubmit: '发起关联任务', followupParent: '来源任务',
+    })
+    Object.assign(dictionaries.en, {
+      followup: 'Follow up · New session', followupHint: 'Create a linked task from this snapshot with existing attachments. The source is unchanged. Running tasks share files; avoid concurrent edits.',
+      followupPlaceholder: 'Ask a follow-up, change requirements, or attach references…', followupSubmit: 'Create linked task', followupParent: 'Source task',
+    })
+
+    function FollowupComposer({ t, task, attachmentManager, busyKey, onFollowup }) {
+      const [text, setText] = React.useState('')
+      const key = 'followup:' + task.id
+      const context = { existingCount: (task.attachments || []).length, existingBytes: (task.attachments || []).reduce((sum, item) => sum + Math.max(item.sourceBytes ?? item.bytes ?? 0, item.bytes ?? 0), 0) }
+      const uploads = attachmentManager?.view(key, context)
+      const disabled = Boolean(busyKey)
+      const submit = async () => {
+        if (disabled || uploads?.blocked || (!text.trim() && !uploads?.hasReady)) return
+        if (await onFollowup(task.id, text)) setText('')
+      }
+      return h('div', { className: 'lsa-sec', ...attachmentEvents(attachmentManager, key, context, disabled) },
+        h('div', { className: 'lsa-sec-title' }, h(Icon, { name: 'send', size: 12 }), t('followup')),
+        h('p', { className: 'lsa-help' }, t('followupHint')),
+        task.parentTaskId ? h('div', { className: 'lsa-help' }, t('followupParent') + ': ' + task.parentTaskId) : null,
+        h('textarea', { className: 'lsa-textarea', rows: 3, maxLength: 8000, value: text, disabled,
+          placeholder: t('followupPlaceholder'), 'aria-label': t('followup'), onChange: event => setText(event.target.value),
+          onKeyDown: event => { if (event.key === 'Enter' && (event.ctrlKey || event.metaKey) && !event.isComposing) { event.preventDefault(); submit() } },
+        }),
+        h(AttachmentPicker, { t, manager: attachmentManager, bucketKey: key, context, disabled }),
+        h('button', { type: 'button', className: 'lsa-btn lsa-btn-primary lsa-btn-sm',
+          disabled: disabled || uploads?.blocked || (!text.trim() && !uploads?.hasReady), onClick: submit }, t('followupSubmit')),
+      )
+    }
+
     function DetailDrawer(props) {
       const { t, task, log, logLoading, logError, busyKey, confirmingDelete, onRequestDelete, onCancelDelete, onConfirmDelete, onClose, onAnswer, onRetry, onStop, answer = '', onAnswerChange = () => {}, attachmentManager } = props
       const drawerRef = React.useRef(null)
@@ -2424,6 +2457,7 @@ window.__ModuleLoader__.load({
               ),
             ),
           ) : null,
+          h(FollowupComposer, { key: task.id, t, task, attachmentManager, busyKey, onFollowup: props.onFollowup }),
           h(SavedAttachments, { t, task }),
           h('div', { className: 'lsa-sec' },
             h('div', { className: 'lsa-sec-title' }, h(Icon, { name: 'list', size: 12 }), t('overview')),
@@ -2792,6 +2826,20 @@ window.__ModuleLoader__.load({
         })
         return true
       }, [runAction, board, attachmentManager, pushToast, t])
+
+      const followupTask = React.useCallback(async (id, text) => {
+        const key = 'followup:' + id
+        const task = board?.tasks.find(item => item.id === id)
+        if (!task) return false
+        const context = { existingCount: (task.attachments || []).length, existingBytes: (task.attachments || []).reduce((sum, item) => sum + Math.max(item.sourceBytes ?? item.bytes ?? 0, item.bytes ?? 0), 0) }
+        let attachments
+        try { attachments = attachmentManager.ids(key, context) } catch (error) { pushToast(errorText(t, errorInfo(error)), 'error'); return false }
+        const result = await runAction(key, 'task.followup', { id, text: text.trim(), attachments }, 'taskAdded', info => attachmentManager.fail(key, info))
+        if (!result) return false
+        attachmentManager.clear(key)
+        if (result.task?.id) openDetail(result.task.id)
+        return true
+      }, [board, attachmentManager, pushToast, t, runAction, openDetail])
 
       const retryTask = React.useCallback(async id => (
         Boolean(await runAction('retry:' + id, 'task.retry', { id }, 'retried'))
@@ -3225,6 +3273,7 @@ window.__ModuleLoader__.load({
                   onConfirmDelete: () => { removeTask(selectedTask.id) },
                   onClose: closeDetail,
                   onAnswer: answerTask,
+                  onFollowup: followupTask,
                   onRetry: retryTask,
                   onStop: stopTask,
                 })

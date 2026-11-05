@@ -51,6 +51,28 @@ function seed(store, patch = {}, input = {}) {
   return store.get(task.id)
 }
 
+test('followup: every task status creates an independent linked task and leaves source untouched', async () => {
+  const { engine, store, sessions } = await setup()
+  for (const status of ['queued', 'running', 'reviewing', 'needs_you', 'done', 'failed', 'cancelled']) {
+    const source = engine.addTask({ workspaceId: 'w1', title: 'Original', goal: 'Original goal', acceptance: 'Original acceptance' }).task
+    store.update(source.id, { status, workerSessionId: 'old-session', report: { state: 'ready', summary: 'Already done', deliverables: ['result.txt'] } })
+    const before = structuredClone(store.get(source.id))
+    const child = engine.followup(source.id, { text: 'New requirement' }).task
+    assert.equal(child.parentTaskId, source.id)
+    assert.equal(child.goal, 'New requirement')
+    assert.equal(child.status, 'queued')
+    assert.notEqual(child.workerSessionId, before.workerSessionId)
+    assert.equal(child.followupContext[0].goal, 'Original goal')
+    assert.equal(child.followupContext[0].report.summary, 'Already done')
+    assert.deepEqual(store.get(source.id), before)
+    assert.equal(sessions.calls.some(call => call.name === 'cancel'), false)
+  }
+  const source = store.list()[0]
+  assert.equal(engine.followup(source.id, {}).error, 'invalid_goal')
+  assert.equal(engine.followup('missing', { text: 'x' }).error, 'unknown_task')
+  assert.equal(engine.followup(source.id, { text: 'x'.repeat(8001) }).error, 'invalid_goal')
+})
+
 const report = (state = 'ready', extra = {}) => ({
   state,
   summary: 'worker summary',

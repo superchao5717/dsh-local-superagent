@@ -10,16 +10,24 @@ DSH 插件：一个**本地版 Superagent 任务看板**。你在自己的 DSH �
 
 需要 Node.js >= 22 和 DSH。当前实机验证范围仅为 **Windows / DSH 0.2.1-rc.5**；其他平台和 DSH 版本尚未实机验证。
 
-- **DSH Desktop**：在插件页选择「添加插件」，在「包名或地址」填写 `github:superchao5717/dsh-local-superagent#v0.5.0` 固定版本；也可从 [v0.5.0 发布页](https://github.com/superchao5717/dsh-local-superagent/releases/tag/v0.5.0)核对安装包。Desktop profile 由 Electron 专属管理，不要使用 Web CLI 命令管理 Desktop。
+- **DSH Desktop**：在插件页选择「添加插件」，在「包名或地址」填写 `github:superchao5717/dsh-local-superagent#v0.6.0` 固定版本；也可从 [v0.6.0 发布页](https://github.com/superchao5717/dsh-local-superagent/releases/tag/v0.6.0)核对安装包。Desktop profile 由 Electron 专属管理，不要使用 Web CLI 命令管理 Desktop。
 - **DSH Web**：在运行 DSH Web 的环境执行以下命令（`--profile` 位于 `add` 之前）：
 
   ```sh
-  dsh plugin --profile web add github:superchao5717/dsh-local-superagent#v0.5.0
+  dsh plugin --profile web add github:superchao5717/dsh-local-superagent#v0.6.0
   ```
 
 安装后在左侧导航栏打开 **Superagent**。不要手工编辑 profile 的 bundles 或依赖列表。包名保留 `@local/dsh-local-superagent`，以兼容已有 profile；`@local` 不代表只能本地安装。
 
 项目不发布 npm（`private: true`），分发方式是 GitHub 源码及 GitHub Release 的 `.tgz`。运行代码本身是 JavaScript，无需 build 步骤；Release 是否已提供可用资产以[发布页](https://github.com/superchao5717/dsh-local-superagent/releases)为准。
+
+## 0.6.0：补充要求 / 新会话
+
+打开任意进行中或已结束任务的详情，在「补充要求 · 新会话」输入追问、新要求或上传附件，点击「发起关联任务」（Ctrl/⌘+Enter）。自动沿用主管、工作区、历史附件及目标/报告快照，独立排队并创建新的执行会话，成功后打开新任务。支持图片、视频和普通文件的选择、局部粘贴/拖入及附件-only 提交，限制沿用原生附件规则。
+
+原任务保持不变，不会被中断或改写；待决策的原地回答仍使用原回答入口。进行中的任务共享磁盘，新要求不要与原任务同时修改同一文件。历史快照不等于完整聊天记录，不自动追踪原任务后续结果；最多保留 8 层关联。关闭详情不保留补充文字草稿。该增强自 0.6.0 提供，安装与资产状态以发布页为准。
+
+2026-11-05 已通过正式插件管理器安装到本机 `desktop` profile（DSH 0.2.2-rc.1，包版本仍为 0.5.0）：107/107 离线测试及 11 个运行文件语法检查通过，原有任务、主管、设置和附件引用保留；刷新后的实际界面已确认补充文字及附件入口。此次未提交真实模型测试任务，完整附件上传→关联新会话→执行审查闭环尚未在该版本实机验收。
 
 ## 0.5.0：任务附件与主管先选
 
