@@ -17,6 +17,7 @@
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { Api } from './lib/api.js'
+import { attachmentHttp } from './lib/attachments.js'
 import { Engine } from './lib/engine.js'
 import { Sessions } from './lib/sessions.js'
 import { Store } from './lib/store.js'
@@ -26,7 +27,7 @@ export const name = 'dsh-local-superagent'
 /** Host services this plugin must have; the plugin stays inactive without them. */
 export const inject = ['connection']
 
-const VERSION = '0.4.0'
+const VERSION = '0.5.0'
 const ROUTE = '/api/local-superagent/invoke'
 
 const json = (value, status = 200) => Response.json(value, {
@@ -92,8 +93,18 @@ export function apply(ctx, config) {
         return json(await api.handle(args))
       },
     })
+    const disposeAttachments = ctx.connection.fetch.register({
+      path: '/api/local-superagent/attachment',
+      methods: ['POST', 'GET'],
+      requestBody: 'streaming',
+      async fetch(request) {
+        await ready
+        return attachmentHttp(engine.attachments, request, ctx.connection)
+      },
+    })
     return () => {
       try {
+        disposeAttachments?.()
         dispose?.()
       } catch (error) {
         log(`could not remove the API route: ${String(error)}`)
@@ -138,6 +149,7 @@ export function apply(ctx, config) {
           return {
             settings: board.settings,
             settingsScope: board.settingsScope,
+            attachments: board.attachments,
             settingsMigration: board.settingsMigration,
             live: board.live,
             workspaces: board.workspaces,

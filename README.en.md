@@ -10,16 +10,28 @@ This is not an official DeepSeek product or a fork of the upstream prototype. It
 
 Requires Node.js >= 22 and DSH. Real-instance validation is limited to **Windows / DSH 0.2.1-rc.5**; other platforms and DSH versions have not been validated in a real instance.
 
-- **DSH Desktop:** choose **Add plugin** on the plugins page and enter `github:superchao5717/dsh-local-superagent#v0.4.0` in the package/address field to pin the version. See the [v0.4.0 Release](https://github.com/superchao5717/dsh-local-superagent/releases/tag/v0.4.0) for its package assets. Electron manages the Desktop profile; do not manage it with Web CLI commands.
+- **DSH Desktop:** choose **Add plugin** on the plugins page and enter `github:superchao5717/dsh-local-superagent#v0.5.0` in the package/address field to pin the version. See the [v0.5.0 Release](https://github.com/superchao5717/dsh-local-superagent/releases/tag/v0.5.0) for its package assets. Electron manages the Desktop profile; do not manage it with Web CLI commands.
 - **DSH Web:** run this in the environment hosting DSH Web (`--profile` comes before `add`):
 
   ```sh
-  dsh plugin --profile web add github:superchao5717/dsh-local-superagent#v0.4.0
+  dsh plugin --profile web add github:superchao5717/dsh-local-superagent#v0.5.0
   ```
 
 Do not edit profile bundles or dependency lists manually. The package name stays `@local/dsh-local-superagent` for existing-profile compatibility; it is not restricted to local installation.
 
 The package remains `private: true`: distribution is through GitHub source and Release `.tgz`, not npm publication. Runtime files are JavaScript and need no build step. Check the [Releases page](https://github.com/superchao5717/dsh-local-superagent/releases) for available assets.
+
+## 0.5.0: task attachments and supervisor-first selection
+
+Available from **0.5.0**, not in 0.4.0/0.3.0. Earlier behavior and validation remain documented below. Back up the ledger and local native attachment data before upgrading; direct downgrade compatibility for attachments is not promised.
+
+- With no workspace selected, the new-task form offers all supervisors and derives the workspace from the selected supervisor. Selecting a workspace first still filters supervisors and validates ownership. A task goal remains required.
+- New-task, top-answer and detail-answer forms support file picking and form-local paste/drop for images, videos and ordinary files. Pending/failed uploads block submission; retry/remove are available. Answers may contain attachments without text. Cancel/collapse preserves in-page drafts; a new question clears stale answer drafts. Durable client drafts across refresh are not promised.
+- An owner-only, bounded streaming wrapper reuses native DSH `attachments.saveImages/saveFileStream` and `fileUploads`. There is no separate file repository or empty draft chat; execution uses native Sessions. Missing attachment services do not disable the text board.
+- Submit `attachments: [uploadId, ...]` with Host-issued tokens only (30-minute TTL, consumed on successful binding). Only Host-generated durable references enter the ledger, not upload tokens or Session receipts. Initial and answer attachments accumulate across continuation/retry/recovery; every new worker recreates native receipts. Older tasks normalize to empty attachments; schema 3 global settings remain unchanged. See the [exact DTO contract](docs/CONTRACT.md).
+- Images become native vision messages and require an image-capable selected model; otherwise the task explicitly needs human handling. Video/other files are read using native file tools, without automatic transcoding/frame extraction or a claim of direct video vision.
+- Each file/video is limited to **100 MiB**, each image to **min(native limits, 20 MiB)**. Initial and all answer attachments together are limited to **20 / 200 MiB per task**, charging `max(sourceBytes, bytes)`. Stricter native image/pixel/dimension/per-message limits still apply.
+- Downloads require the owner and a durable task association. Non-images are forced downloads; HTML/SVG are not executed. Files may be untrusted and do not expand authorization. Removing drafts/tasks does not delete shared native DSH CAS objects; native provider objects remain on the local machine without automatic GC. Cross-Host file synchronization is not promised.
 
 ## 0.4.0: global settings and a single task entry
 
@@ -35,9 +47,9 @@ Back up the ledger and let running tasks finish before upgrading. Migration take
 
 **Do not directly overwrite a schema 3 installation with 0.3.0 and expect automatic downgrade compatibility.** For rollback, first stop related work and use the pre-upgrade backup; an older version may misinterpret a newer ledger.
 
-## Use (0.4.0)
+## Use (0.5.0)
 
-1. Open **Superagent**, select a registered workspace, and use **＋** in the supervisor rail to create or select a supervisor. The selected supervisor's **⋯** menu provides rename/delete.
+1. Open **Superagent** and select a supervisor directly to derive its workspace, or select a workspace first to filter supervisors. Use **＋** in the rail to create a supervisor; the selected supervisor's **⋯** menu provides rename/delete.
 2. Use the sole **New task** entry below the supervisor area; the composer opens there. Enter its title, goal, optional acceptance criteria and priority, then enqueue it. The top toolbar has no duplicate task CTA.
 3. Watch the queued, active and ended columns. Waiting tasks remain in the active column.
 4. Answer questions directly in the top attention panel or task details. Successful answers resume the task.
@@ -71,6 +83,10 @@ npm test
 npm run check
 npm pack --dry-run
 ```
+
+### 0.5.0 validation (2026-11-05)
+
+The automated regression passed **104/104** tests, including attachment storage, fresh native receipts across rounds, download bytes and filename boundaries. The existing Windows / DSH 0.2.1-rc.5 instance verified supervisor-first workspace selection, image recognition, text reading, small AVI file handoff and completion of a second round after an attachment-only answer. Video handoff does not mean the model directly understood the video. This is not a claim of all-format, cross-platform or clean Host reinstall validation.
 
 ### 0.4.0 validation (2026-11-04)
 

@@ -67,8 +67,8 @@ export function fakeSessions(overrides = {}) {
       calls.push({ name: 'ensure', sessionId: options.sessionId, options })
       return { id: options.sessionId, status: 'idle' }
     },
-    prompt: async (sessionId, requestId, text, mode) => {
-      calls.push({ name: 'prompt', sessionId, requestId, text, mode })
+    prompt: async (sessionId, requestId, text, mode, attachmentParts) => {
+      calls.push({ name: 'prompt', sessionId, requestId, text, mode, attachmentParts })
     },
     cancel: sessionId => {
       calls.push({ name: 'cancel', sessionId })

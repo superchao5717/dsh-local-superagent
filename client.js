@@ -6,6 +6,7 @@ window.__ModuleLoader__.load({
     const NS = 'localSuperagent'
     const PANEL_ID = 'local-superagent'
     const ROUTE = 'api/local-superagent/invoke'
+    const ATTACHMENT_ROUTE = 'api/local-superagent/attachment'
 
     const dictionaries = {
       en: {
@@ -465,6 +466,7 @@ window.__ModuleLoader__.load({
     Object.assign(dictionaries.en, {
       panelCrashed: 'The Superagent panel could not render.',
       globalSettings: 'Global settings · All Superagents', globalSettingsReload: 'Reload or upgrade the Host for global settings. No settings will be changed on this older Host.',
+      attachments: 'Attachments', addAttachments: 'Add files', removeAttachment: 'Remove attachment', attachmentsUnavailable: 'Attachments unavailable. Upgrade or reload the Host to enable uploads.', attachmentDropHint: 'Choose files, or paste/drop files inside this form.', attachmentLimits: '{count} total · {total} total · file ≤ {file} · image ≤ {image}', attachmentReady: 'Uploaded', attachmentUploading: 'Uploading…', attachmentFailed: 'Upload failed', attachmentExpired: 'Upload expired. Retry to upload again.', attachmentsPending: 'Finish or retry/remove pending uploads before submitting.', attachmentsCountLimit: 'The task attachment count limit was reached.', attachmentSizeLimit: 'This file or the task total exceeds the attachment size limit.', attachmentVideo: 'Video file', attachmentUnderstanding: 'Uploading does not mean the model understood the content. Images require model support; videos remain files for tools, without automatic transcoding.',
       createSuperagentShort: 'Create', superagentActions: 'Superagent actions', confirmSuperagentRemoval: 'Remove “{name}”?', compactSubtitle: 'Delegate · Review · Deliver',
       superagents: 'Superagents', allSuperagents: 'Aggregate view', selectSuperagent: 'Select a Superagent to change settings.',
       addSuperagent: 'Create Superagent', renameSuperagent: 'Rename', removeSuperagent: 'Remove Superagent',
@@ -484,6 +486,7 @@ window.__ModuleLoader__.load({
     Object.assign(dictionaries.zh, {
       panelCrashed: 'Superagent 面板渲染出错。',
       globalSettings: '全局设置 · 适用于所有 Superagent', globalSettingsReload: '请重载或升级 Host 以使用全局设置；当前旧版 Host 不允许修改，避免误用。',
+      attachments: '附件', addAttachments: '添加文件', removeAttachment: '移除附件', attachmentsUnavailable: '附件暂不可用，请升级或重载 Host 后使用上传。', attachmentDropHint: '选择文件，或在此表单内粘贴、拖入文件。', attachmentLimits: '累计 {count} 个 / {total} · 文件 ≤ {file} · 图片 ≤ {image}', attachmentReady: '已上传', attachmentUploading: '上传中…', attachmentFailed: '上传失败', attachmentExpired: '上传引用已过期，请重试上传。', attachmentsPending: '请先完成上传，或重试 / 移除失败附件，再提交。', attachmentsCountLimit: '已达到任务附件数量上限。', attachmentSizeLimit: '文件或任务累计附件超过大小限制。', attachmentVideo: '视频文件', attachmentUnderstanding: '上传不代表模型已理解内容；图片需要模型支持，视频按文件交给工具，不自动转码。',
       createSuperagentShort: '创建', superagentActions: '主管操作', confirmSuperagentRemoval: '确定移除「{name}」？', compactSubtitle: '派发 · 审查 · 交付',
       superagents: 'Superagent 管理', allSuperagents: '聚合视图', selectSuperagent: '请选择一个 Superagent 后修改设置。',
       addSuperagent: '创建 Superagent', renameSuperagent: '重命名', removeSuperagent: '移除 Superagent',
@@ -809,6 +812,15 @@ window.__ModuleLoader__.load({
       .lsa-answer-actions .lsa-help { margin-left: auto; }
       .lsa-needs-actions { display: flex; align-items: center; gap: 4px; }
 
+      .lsa-attachments { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+      .lsa-attachment-toolbar { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+      .lsa-attachment-list { display: flex; flex-wrap: wrap; gap: 6px; max-height: 200px; overflow-y: auto; }
+      .lsa-attachment-chip { display: flex; align-items: center; gap: 7px; flex: 1 1 230px; min-width: 0; max-width: 100%; padding: 6px; border: 1px solid var(--dsw-alias-border-l3); border-radius: 8px; }
+      .lsa-attachment-chip > img, .lsa-saved-attachment > img { width: 38px; height: 38px; object-fit: contain; border-radius: 5px; }
+      .lsa-attachment-content { display: flex; flex-direction: column; flex: 1; min-width: 0; font-size: 11px; }
+      .lsa-attachment-content > strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .lsa-attachment-content progress { width: 100%; height: 5px; accent-color: var(--dsw-alias-state-business-primary); }
+      .lsa-saved-attachment { display: flex; align-items: center; gap: 8px; color: var(--dsw-alias-state-business-primary); overflow-wrap: anywhere; font-size: 12px; }
       /* board */
       .lsa-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; padding-top: 10px; }
       .lsa-layout[data-detail=true] { grid-template-columns: minmax(0, 1fr) 398px; }
@@ -1247,6 +1259,7 @@ window.__ModuleLoader__.load({
     }
 
     function questionKey(task) {
+      if (task.questionKey === null || typeof task.questionKey === 'string') return task.questionKey
       return JSON.stringify([task.question?.at ?? null, task.question?.text || ''])
     }
 
@@ -1297,6 +1310,7 @@ window.__ModuleLoader__.load({
         stateDir: typeof source.stateDir === 'string' ? source.stateDir : '',
         settings,
         settingsScope: source.settingsScope === 'global' ? 'global' : '',
+        attachments: source.attachments && typeof source.attachments === 'object' ? source.attachments : { available: false },
         superagents,
         multiSuperagent,
         workspaces,
@@ -1304,6 +1318,195 @@ window.__ModuleLoader__.load({
         live,
         supervisor: source.supervisor && typeof source.supervisor === 'object' ? source.supervisor : null,
       }
+    }
+
+    const ATTACHMENT_LIMITS = { maxFileBytes: 104857600, maxImageBytes: 20971520, maxAttachments: 20, maxTotalBytes: 209715200, uploadTtlMs: 1800000 }
+    function attachmentLimits(capability) {
+      return Object.fromEntries(Object.entries(ATTACHMENT_LIMITS).map(([key, fallback]) => {
+        const value = Number(capability?.limits?.[key])
+        return [key, Number.isFinite(value) && value > 0 ? Math.min(fallback, value) : fallback]
+      }))
+    }
+    function formatBytes(value) {
+      return value >= 1048576 ? (value / 1048576).toFixed(1) + ' MiB' : value >= 1024 ? (value / 1024).toFixed(1) + ' KiB' : value + ' B'
+    }
+    function answerBucket(task) { return 'answer:' + task.id + ':' + questionKey(task) }
+    function uploadAttachment(file, context, signal, onProgress) {
+      return new Promise((resolve, reject) => {
+        const query = new URLSearchParams({ kind: context.kind, name: file.name || 'attachment' })
+        if (context.kind === 'image') query.set('mediaType', file.type)
+        if (context.taskId) { query.set('taskId', context.taskId); query.set('questionKey', context.questionKey) }
+        const xhr = new XMLHttpRequest()
+        let settled = false
+        const finish = (fn, value) => {
+          if (settled) return
+          settled = true; signal.removeEventListener('abort', abort); fn(value)
+        }
+        const abort = () => { xhr.abort(); finish(reject, hostError('attachment_cancelled', 'Upload cancelled')) }
+        xhr.open('POST', ATTACHMENT_ROUTE + '?' + query.toString())
+        xhr.withCredentials = true
+        xhr.setRequestHeader('content-type', 'application/octet-stream')
+        xhr.upload.onprogress = event => onProgress({ loaded: event.loaded, total: event.lengthComputable ? event.total : file.size })
+        xhr.onerror = () => finish(reject, hostError('transport', 'Attachment upload failed'))
+        xhr.onabort = () => finish(reject, hostError('attachment_cancelled', 'Upload cancelled'))
+        xhr.onload = () => {
+          let body
+          try { body = JSON.parse(xhr.responseText) } catch (error) { finish(reject, hostError('transport', 'Invalid upload response')); return }
+          if (xhr.status < 200 || xhr.status >= 300 || body?.ok !== true) { finish(reject, hostError(body?.code || 'transport', body?.message || 'Attachment upload failed')); return }
+          const value = body.data
+          if (!value || typeof value.uploadId !== 'string' || !value.uploadId || !Number.isFinite(value.expiresAt)) { finish(reject, hostError('transport', 'Invalid upload receipt')); return }
+          if (context.taskId && value.questionKey !== context.questionKey) { finish(reject, hostError('attachment_question_changed', 'Question changed while uploading')); return }
+          finish(resolve, value)
+        }
+        if (signal.aborted) { abort(); return }
+        signal.addEventListener('abort', abort, { once: true })
+        xhr.send(file)
+      })
+    }
+    // Only ephemeral browser drafts live here. Removing a chip never deletes native storage.
+    function createAttachmentManager({ changed = () => {}, upload = uploadAttachment, now = () => Date.now(), createURL = file => URL.createObjectURL(file), revokeURL = url => URL.revokeObjectURL(url) } = {}) {
+      const buckets = new Map()
+      let capability = { available: false }, t = key => key, alive = true, sequence = 0
+      const notify = () => { if (alive) changed() }
+      const bucketFor = (key, context = {}) => {
+        if (!buckets.has(key)) buckets.set(key, { key, context, items: [], error: '' })
+        const bucket = buckets.get(key); bucket.context = context
+        return bucket
+      }
+      const release = item => {
+        item.operation = null; item.controller?.abort(); item.controller = null
+        if (item.previewUrl) { revokeURL(item.previewUrl); item.previewUrl = '' }
+      }
+      const effective = item => item.status === 'ready' && item.expiresAt <= now() ? { ...item, status: 'error', error: t('attachmentExpired') } : item
+      const view = (key, context = {}) => {
+        const bucket = bucketFor(key, context), items = bucket.items.map(effective)
+        return { key, items, error: bucket.error, available: capability.available === true, limits: attachmentLimits(capability), hasReady: items.some(item => item.status === 'ready'), blocked: items.some(item => item.status !== 'ready') || (items.length > 0 && capability.available !== true) }
+      }
+      const start = (bucket, item) => {
+        item.controller?.abort()
+        const operation = {}; const controller = new AbortController()
+        item.operation = operation; item.controller = controller; item.status = 'uploading'; item.error = ''; item.loaded = 0; item.total = item.bytes; delete item.uploadId
+        const current = () => alive && buckets.get(bucket.key) === bucket && bucket.items.includes(item) && item.operation === operation && !controller.signal.aborted
+        notify()
+        return Promise.resolve().then(() => {
+          if (!current()) return
+          return upload(item.file, { ...bucket.context, kind: item.kind }, controller.signal, progress => {
+            if (!current()) return
+            item.loaded = progress.loaded; item.total = progress.total; notify()
+          })
+        }).then(value => {
+          if (!current()) return
+          item.uploadId = value.uploadId; item.expiresAt = value.expiresAt; item.status = 'ready'; item.loaded = item.bytes; item.controller = null; item.operation = null; notify()
+        }).catch(error => {
+          if (!current()) return
+          item.status = 'error'; item.error = errorInfo(error).code === 'attachment_expired' ? t('attachmentExpired') : errorText(t, errorInfo(error)); item.controller = null; item.operation = null; notify()
+        })
+      }
+      const add = (key, files, context = {}) => {
+        const bucket = bucketFor(key, context), limits = attachmentLimits(capability), operations = []
+        bucket.error = ''
+        if (!alive || capability.available !== true) { bucket.error = t('attachmentsUnavailable'); notify(); return Promise.resolve([]) }
+        for (const file of Array.from(files || [])) {
+          const kind = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(file.type) ? 'image' : 'file'
+          const count = bucket.items.length + (context.existingCount || 0)
+          const bytes = bucket.items.reduce((sum, item) => sum + item.bytes, context.existingBytes || 0)
+          if (count >= limits.maxAttachments) { bucket.error = t('attachmentsCountLimit'); continue }
+          if (!Number.isSafeInteger(file.size) || file.size < 0 || file.size > (kind === 'image' ? limits.maxImageBytes : limits.maxFileBytes) || bytes + file.size > limits.maxTotalBytes) { bucket.error = file.name + ': ' + t('attachmentSizeLimit'); continue }
+          const item = { id: 'upload-' + (++sequence), file, name: file.name || 'attachment', bytes: file.size, kind, mediaType: file.type || '', previewUrl: kind === 'image' ? createURL(file) : '', status: 'uploading', operation: null }
+          bucket.items.push(item); operations.push(start(bucket, item))
+        }
+        notify(); return Promise.all(operations)
+      }
+      const manager = {
+        configure(next, translate) { capability = next || { available: false }; if (translate) t = translate },
+        activate() { alive = true },
+        view,
+        add,
+        ids(key, context = {}) {
+          const state = view(key, context)
+          if (state.blocked) throw hostError('attachment_upload_busy', t('attachmentsPending'))
+          return state.items.map(item => item.uploadId)
+        },
+        retry(key, id, context = {}) {
+          const bucket = bucketFor(key, context), item = bucket.items.find(item => item.id === id)
+          if (item && capability.available === true && effective(item).status === 'error') return start(bucket, item)
+          return Promise.resolve()
+        },
+        remove(key, id) {
+          const bucket = buckets.get(key); if (!bucket) return
+          const item = bucket.items.find(item => item.id === id); if (!item) return
+          release(item); bucket.items = bucket.items.filter(other => other !== item); bucket.error = ''; notify()
+        },
+        clear(key) {
+          const bucket = buckets.get(key); if (!bucket) return
+          bucket.items.forEach(release); buckets.delete(key); notify()
+        },
+        fail(key, info) {
+          const bucket = buckets.get(key); if (!bucket || !String(info.code).startsWith('attachment')) return
+          bucket.error = info.message || t('attachmentsPending')
+          for (const item of bucket.items) if (item.status === 'ready') { item.status = 'error'; item.error = info.message || t('attachmentExpired') }
+          notify()
+        },
+        reconcile(tasks) {
+          const valid = new Set(tasks.filter(task => task.status === 'needs_you' || task.autonomyReviewPending).map(answerBucket))
+          for (const key of buckets.keys()) if (key !== 'new-task' && !valid.has(key)) manager.clear(key)
+        },
+        dispose() { alive = false; for (const bucket of buckets.values()) bucket.items.forEach(release); buckets.clear() },
+      }
+      return manager
+    }
+    function attachmentContext(task) {
+      return task ? { taskId: task.id, questionKey: questionKey(task), existingCount: (task.attachments || []).length, existingBytes: (task.attachments || []).reduce((sum, item) => sum + Math.max(item.sourceBytes ?? item.bytes ?? 0, item.bytes ?? 0), 0) } : {}
+    }
+    function attachmentEvents(manager, key, context, disabled) {
+      if (!manager || disabled) return {}
+      const accept = (event, files) => { if (files?.length) { event.preventDefault(); manager.add(key, files, context) } }
+      return {
+        onPaste: event => accept(event, event.clipboardData?.files),
+        onDragOver: event => { if (Array.from(event.dataTransfer?.types || []).includes('Files')) event.preventDefault() },
+        onDrop: event => {
+          const files = Array.from(event.dataTransfer?.files || [])
+          if (files.length || Array.from(event.dataTransfer?.types || []).includes('Files')) event.preventDefault()
+          const directories = new Set(Array.from(event.dataTransfer?.items || []).filter(item => item.webkitGetAsEntry?.()?.isDirectory).map(item => item.getAsFile?.()))
+          accept(event, files.filter(file => !directories.has(file)))
+        },
+      }
+    }
+    function AttachmentPicker({ t, manager, bucketKey, context = {}, disabled }) {
+      const inputRef = React.useRef(null)
+      if (!manager) return null
+      const draft = manager.view(bucketKey, context)
+      return h('div', { className: 'lsa-attachments', 'aria-label': t('attachments') },
+        h('input', { ref: inputRef, className: 'lsa-sr', type: 'file', multiple: true, tabIndex: -1, 'aria-label': t('addAttachments'), disabled: disabled || !draft.available, onChange: event => { manager.add(bucketKey, event.target.files, context); event.target.value = '' } }),
+        h('div', { className: 'lsa-attachment-toolbar' },
+          h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm', disabled: disabled || !draft.available, onClick: () => inputRef.current?.click(), title: draft.available ? t('attachmentDropHint') : t('attachmentsUnavailable') }, h(Icon, { name: 'plus', size: 12 }), t('addAttachments')),
+          h('span', { className: 'lsa-help' }, draft.available ? fill(t('attachmentLimits'), { count: draft.limits.maxAttachments, total: formatBytes(draft.limits.maxTotalBytes), file: formatBytes(draft.limits.maxFileBytes), image: formatBytes(draft.limits.maxImageBytes) }) : t('attachmentsUnavailable')),
+        ),
+        draft.items.length ? h('div', { className: 'lsa-attachment-list', 'aria-live': 'polite' }, draft.items.map(item => h('div', { key: item.id, className: 'lsa-attachment-chip', 'data-state': item.status },
+          item.previewUrl ? h('img', { src: item.previewUrl, alt: item.name }) : h(Icon, { name: 'list', size: 20 }),
+          h('div', { className: 'lsa-attachment-content' }, h('strong', { title: item.name }, item.name),
+            h('span', { className: 'lsa-help' }, formatBytes(item.bytes), ' · ', t(item.status === 'ready' ? 'attachmentReady' : item.status === 'uploading' ? 'attachmentUploading' : 'attachmentFailed'), item.mediaType.startsWith('video/') ? ' · ' + t('attachmentVideo') : ''),
+            item.status === 'uploading' ? h('progress', { max: 1, value: item.total > 0 ? Math.min(1, item.loaded / item.total) : undefined, 'aria-label': t('attachmentUploading') + ' · ' + item.name }) : null,
+            item.error ? h('span', { className: 'lsa-error-text' }, item.error) : null),
+          item.status === 'error' ? h('button', { type: 'button', className: 'lsa-btn lsa-btn-sm', disabled: disabled || !draft.available, onClick: () => manager.retry(bucketKey, item.id, context) }, t('retryTask')) : null,
+          h('button', { type: 'button', className: 'lsa-iconbtn', disabled, 'aria-label': t('removeAttachment') + ' · ' + item.name, onClick: () => manager.remove(bucketKey, item.id) }, h(Icon, { name: 'close', size: 12 })),
+        ))) : null,
+        draft.error ? h('p', { className: 'lsa-error-text', role: 'alert' }, draft.error) : null,
+        draft.items.length ? h('p', { className: 'lsa-help' }, t('attachmentUnderstanding')) : null,
+      )
+    }
+    function SavedAttachments({ t, task }) {
+      const items = Array.isArray(task.attachments) ? task.attachments : []
+      if (!items.length) return null
+      return h('div', { className: 'lsa-sec' }, h('h3', { className: 'lsa-sec-title' }, t('attachments')),
+        items.map((item, index) => {
+          const url = ATTACHMENT_ROUTE + '?' + new URLSearchParams({ taskId: task.id, attachmentId: item.attachmentId }).toString()
+          return h('a', { key: item.attachmentId + ':' + index, className: 'lsa-saved-attachment', href: url, target: '_blank', rel: 'noopener noreferrer' },
+            item.kind === 'image' ? h('img', { src: url, alt: item.name, loading: 'lazy' }) : h(Icon, { name: 'list', size: 18 }),
+            h('span', null, item.name + ' · ' + formatBytes(item.bytes)),
+          )
+        }), h('p', { className: 'lsa-help' }, t('attachmentUnderstanding')),
+      )
     }
 
     async function invoke(action, payload) {
@@ -1664,7 +1867,7 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function AttentionPanel({ t, tasks, answers, busyKey, onAnswerChange, onAnswer, onOpen, now }) {
+    function AttentionPanel({ t, tasks, answers, busyKey, onAnswerChange, onAnswer, onOpen, now, attachmentManager }) {
       const [expanded, setExpanded] = React.useState(true)
       const [errors, setErrors] = React.useState({})
       const [submittingId, setSubmittingId] = React.useState('')
@@ -1673,7 +1876,9 @@ window.__ModuleLoader__.load({
       const submit = async task => {
         if (busyKey || submittingRef.current) return
         const value = (answers[task.id] || '').trim()
-        if (!value) { setErrors(current => ({ ...current, [task.id]: t('noAnswer') })); return }
+        const uploads = attachmentManager?.view(answerBucket(task), attachmentContext(task))
+        if (uploads?.blocked) { setErrors(current => ({ ...current, [task.id]: t('attachmentsPending') })); return }
+        if (!value && !uploads?.hasReady) { setErrors(current => ({ ...current, [task.id]: t('noAnswer') })); return }
         submittingRef.current = true
         setSubmittingId(task.id)
         setErrors(current => ({ ...current, [task.id]: '' }))
@@ -1701,7 +1906,8 @@ window.__ModuleLoader__.load({
             const busy = submittingId === task.id || busyKey === 'answer:' + task.id
             const inputId = regionId + '-answer-' + task.id
             const errorId = inputId + '-error'
-            return h('article', { key: task.id, className: 'lsa-needs-card', 'aria-label': task.title },
+            const uploads = attachmentManager?.view(answerBucket(task), attachmentContext(task))
+            return h('article', { key: task.id, className: 'lsa-needs-card', 'aria-label': task.title, ...attachmentEvents(attachmentManager, answerBucket(task), attachmentContext(task), busy) },
               h('div', { className: 'lsa-needs-card-head' },
                 h('h3', { className: 'lsa-needs-card-title' }, task.title || ''),
                 h('span', { className: 'lsa-needs-card-meta', title: task.workspaceTitle || '' }, task.superagentTitle),
@@ -1716,9 +1922,10 @@ window.__ModuleLoader__.load({
                   if (event.key === 'Enter' && !event.shiftKey && !event.isComposing && !event.nativeEvent?.isComposing) { event.preventDefault(); return submit(task) }
                 },
               }),
+              h(AttachmentPicker, { t, manager: attachmentManager, bucketKey: answerBucket(task), context: attachmentContext(task), disabled: busy }),
               errors[task.id] ? h('span', { id: errorId, className: 'lsa-error-text', role: 'alert' }, errors[task.id]) : null,
               h('div', { className: 'lsa-answer-actions' },
-                h('button', { type: 'button', className: 'lsa-btn lsa-btn-primary lsa-btn-sm', disabled: Boolean(busyKey) || Boolean(submittingId) || !value.trim(), onClick: () => submit(task) }, busy ? h(Spinner, { size: 12 }) : h(Icon, { name: 'send', size: 13 }), t(busy ? 'submittingAnswer' : 'submitAnswer')),
+                h('button', { type: 'button', className: 'lsa-btn lsa-btn-primary lsa-btn-sm', disabled: Boolean(busyKey) || Boolean(submittingId) || uploads?.blocked || (!value.trim() && !uploads?.hasReady), onClick: () => submit(task) }, busy ? h(Spinner, { size: 12 }) : h(Icon, { name: 'send', size: 13 }), t(busy ? 'submittingAnswer' : 'submitAnswer')),
                 h('span', { className: 'lsa-help' }, t('answersHint')),
                 task.autonomyReviewPending || task.autonomy?.attempted || task.ownerSettings?.autonomy?.enabled ? h('span', { className: 'lsa-help lsa-attention-timer' }, waitingText(task, task.ownerSettings, now, t)) : null,
               ),
@@ -1728,15 +1935,19 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function TaskComposer({ t, workspaces, superagents, defaultSuperagentId, defaultWorkspaceId, busyKey, open, onToggle, onSubmit }) {
-      const [form, setForm] = React.useState({ title: '', goal: '', acceptance: '', priority: 2, workspaceId: defaultWorkspaceId || '', superagentId: defaultSuperagentId || '' })
+    function TaskComposer({ t, workspaces, superagents, defaultSuperagentId, defaultWorkspaceId, busyKey, open, onToggle, onSubmit, attachmentManager }) {
+      const [form, setForm] = React.useState(() => {
+        const owner = superagents.find(agent => agent.id === defaultSuperagentId)
+        return { title: '', goal: '', acceptance: '', priority: 2, workspaceId: owner?.workspaceId || defaultWorkspaceId || '', superagentId: owner?.id || '', workspaceFilterId: defaultWorkspaceId || '' }
+      })
       const [errors, setErrors] = React.useState({})
       const busy = busyKey === 'task.add'
+      const uploads = attachmentManager?.view('new-task')
       const firstFieldRef = React.useRef(null)
 
       React.useEffect(() => {
         const owner = superagents.find(agent => agent.id === defaultSuperagentId)
-        setForm(current => ({ ...current, workspaceId: owner?.workspaceId || defaultWorkspaceId || '', superagentId: owner?.id || '' }))
+        setForm(current => ({ ...current, workspaceId: owner?.workspaceId || defaultWorkspaceId || '', superagentId: owner?.id || '', workspaceFilterId: defaultWorkspaceId || '' }))
       }, [defaultWorkspaceId, defaultSuperagentId])
 
       React.useEffect(() => {
@@ -1748,6 +1959,18 @@ window.__ModuleLoader__.load({
       }, [open])
 
       const update = (key, value) => setForm(current => ({ ...current, [key]: value }))
+      const selectWorkspace = value => setForm(current => {
+        const owner = superagents.find(agent => agent.id === current.superagentId)
+        return { ...current, workspaceId: value, workspaceFilterId: value, superagentId: owner?.workspaceId === value ? owner.id : '' }
+      })
+      const selectOwner = id => {
+        const owner = superagents.find(agent => agent.id === id)
+        if (id && !owner) return
+        setForm(current => {
+          if (owner && current.workspaceFilterId && owner.workspaceId !== current.workspaceFilterId) return current
+          return { ...current, superagentId: owner?.id || '', workspaceId: owner?.workspaceId || current.workspaceId }
+        })
+      }
       const validate = () => {
         const next = {}
         if (!form.title.trim()) next.title = t('taskTitleRequired')
@@ -1761,8 +1984,12 @@ window.__ModuleLoader__.load({
         return Object.keys(next).length === 0
       }
       const submit = async () => {
-        if (busy || !validate()) return
+        if (busyKey || !validate()) return
+        if (uploads?.blocked) { setErrors(current => ({ ...current, attachments: t('attachmentsPending') })); return }
+        let attachmentIds = []
+        try { attachmentIds = attachmentManager ? attachmentManager.ids('new-task') : [] } catch (error) { setErrors(current => ({ ...current, attachments: errorText(t, errorInfo(error)) })); return }
         const ok = await onSubmit({
+          attachments: attachmentIds,
           workspaceId: form.workspaceId,
           superagentId: form.superagentId,
           title: form.title.trim(),
@@ -1784,7 +2011,7 @@ window.__ModuleLoader__.load({
       const counter = (value, max) => ({ text: value.length + ' / ' + max, over: value.length > max })
       if (!open) return null
 
-      return h('section', { id: 'lsa-task-composer', className: 'lsa-panel', 'aria-label': t('newTaskSection') },
+      return h('section', { id: 'lsa-task-composer', className: 'lsa-panel', 'aria-label': t('newTaskSection'), ...attachmentEvents(attachmentManager, 'new-task', {}, busy) },
         h('div', { className: 'lsa-panel-pad' },
           h('div', { className: 'lsa-panel-head' },
             h('div', { className: 'lsa-panel-title' },
@@ -1828,7 +2055,7 @@ window.__ModuleLoader__.load({
                 h('select', {
                   id: 'lsa-task-workspace', className: 'lsa-select', value: form.workspaceId,
                   'aria-invalid': errors.workspaceId ? 'true' : 'false',
-                  onChange: event => setForm(current => ({ ...current, workspaceId: event.target.value, superagentId: '' })),
+                  onChange: event => selectWorkspace(event.target.value),
                 }, h('option', { value: '' }, t('taskWorkspaceRequired')), workspaces.map(workspace => h('option', {
                   key: workspace.id, value: workspace.id,
                 }, workspace.title || workspace.path || workspace.id))),
@@ -1848,13 +2075,15 @@ window.__ModuleLoader__.load({
               ),
             ),
             h(Field, { id: 'lsa-task-agent', label: t('supervisorLabel'), required: true, error: errors.superagentId },
-              h('select', { id: 'lsa-task-agent', className: 'lsa-select', value: form.superagentId, disabled: busy, 'aria-invalid': errors.superagentId ? 'true' : 'false', onChange: event => update('superagentId', event.target.value) },
+              h('select', { id: 'lsa-task-agent', className: 'lsa-select', value: form.superagentId, disabled: busy, 'aria-invalid': errors.superagentId ? 'true' : 'false', onChange: event => selectOwner(event.target.value) },
                 h('option', { value: '' }, t('superagentRequired')),
-                superagents.filter(agent => agent.workspaceId === form.workspaceId).map(agent => h('option', { key: agent.id, value: agent.id }, agent.title + ' · ' + agent.id))),
+                superagents.filter(agent => !form.workspaceFilterId || agent.workspaceId === form.workspaceFilterId).map(agent => h('option', { key: agent.id, value: agent.id }, agent.title + ' · ' + (workspaces.find(workspace => workspace.id === agent.workspaceId)?.title || agent.workspaceId) + ' · ' + agent.id))),
             ),
+            h(AttachmentPicker, { t, manager: attachmentManager, bucketKey: 'new-task', disabled: busy }),
+            errors.attachments ? h('p', { className: 'lsa-error-text', role: 'alert' }, errors.attachments) : null,
             h('div', { className: 'lsa-form-actions' },
               h('button', {
-                type: 'button', className: 'lsa-btn lsa-btn-primary', disabled: busy, onClick: submit,
+                type: 'button', className: 'lsa-btn lsa-btn-primary', disabled: Boolean(busyKey) || uploads?.blocked, onClick: submit,
               }, busy ? h(Spinner, { size: 13 }) : h(Icon, { name: 'plus', size: 14 }), busy ? t('taskSubmitting') : t('taskSubmit')),
               h('button', {
                 type: 'button', className: 'lsa-btn', disabled: busy, onClick: onToggle,
@@ -2124,9 +2353,9 @@ window.__ModuleLoader__.load({
     }
 
     function DetailDrawer(props) {
-      const { t, task, log, logLoading, logError, busyKey, confirmingDelete, onRequestDelete, onCancelDelete, onConfirmDelete, onClose, onAnswer, onRetry, onStop } = props
+      const { t, task, log, logLoading, logError, busyKey, confirmingDelete, onRequestDelete, onCancelDelete, onConfirmDelete, onClose, onAnswer, onRetry, onStop, answer = '', onAnswerChange = () => {}, attachmentManager } = props
       const drawerRef = React.useRef(null)
-      const [answer, setAnswer] = React.useState('')
+      const uploads = attachmentManager?.view(answerBucket(task), attachmentContext(task))
       const answerBusy = busyKey === 'answer:' + task.id
       const retryBusy = busyKey === 'retry:' + task.id
       const stopBusy = busyKey === 'stop:' + task.id
@@ -2145,9 +2374,8 @@ window.__ModuleLoader__.load({
 
       const submitAnswer = async () => {
         const value = answer.trim()
-        if (!value || answerBusy) return
-        const ok = await onAnswer(task.id, value)
-        if (ok) setAnswer('')
+        if (busyKey || uploads?.blocked || (!value && !uploads?.hasReady)) return
+        await onAnswer(task.id, value)
       }
 
       return h('aside', { className: 'lsa-drawer', role: 'complementary', 'aria-label': t('detailTitle'), ref: drawerRef, tabIndex: -1 },
@@ -2164,7 +2392,7 @@ window.__ModuleLoader__.load({
             h(Icon, { name: 'close', size: 15 })),
         ),
         h('div', { className: 'lsa-drawer-body' },
-          showAnswer ? h('div', { className: 'lsa-sec' },
+          showAnswer ? h('div', { className: 'lsa-sec', ...attachmentEvents(attachmentManager, answerBucket(task), attachmentContext(task), answerBusy) },
             h('div', { className: 'lsa-sec-title' },
               h(Icon, { name: 'help', size: 12 }), t('answerSection')),
             h('div', { className: 'lsa-help' }, waitingText(task, task.ownerSettings, Date.now(), t)),
@@ -2177,24 +2405,26 @@ window.__ModuleLoader__.load({
                 className: 'lsa-textarea', rows: 3, value: answer,
                 placeholder: t('answerPlaceholder'), 'aria-label': t('answerLabel'),
                 disabled: answerBusy,
-                onChange: event => setAnswer(event.target.value),
+                onChange: event => onAnswerChange(task.id, event.target.value),
                 onKeyDown: event => {
-                  if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
+                  if (event.key === 'Enter' && !event.shiftKey && !event.isComposing && !event.nativeEvent?.isComposing) {
                     event.preventDefault()
                     submitAnswer()
                   }
                 },
               }),
+              h(AttachmentPicker, { t, manager: attachmentManager, bucketKey: answerBucket(task), context: attachmentContext(task), disabled: answerBusy }),
               h('div', { className: 'lsa-answer-actions' },
                 h('button', {
                   type: 'button', className: 'lsa-btn lsa-btn-primary lsa-btn-sm',
-                  disabled: answerBusy || !answer.trim(), onClick: submitAnswer,
+                  disabled: Boolean(busyKey) || uploads?.blocked || (!answer.trim() && !uploads?.hasReady), onClick: submitAnswer,
                 }, answerBusy ? h(Spinner, { size: 12 }) : h(Icon, { name: 'send', size: 13 }),
                   answerBusy ? t('submittingAnswer') : t('submitAnswer')),
                 h('span', { className: 'lsa-help' }, t('answerHint')),
               ),
             ),
           ) : null,
+          h(SavedAttachments, { t, task }),
           h('div', { className: 'lsa-sec' },
             h('div', { className: 'lsa-sec-title' }, h(Icon, { name: 'list', size: 12 }), t('overview')),
             h('div', { className: 'lsa-kv' },
@@ -2439,6 +2669,13 @@ window.__ModuleLoader__.load({
       const [modelCatalog, setModelCatalog] = React.useState(null)
       const [modelCatalogLoading, setModelCatalogLoading] = React.useState(false)
       const [modelCatalogError, setModelCatalogError] = React.useState('')
+      const [, attachmentChanged] = React.useState(0)
+      const attachmentManagerRef = React.useRef(null)
+      if (!attachmentManagerRef.current) attachmentManagerRef.current = createAttachmentManager({ changed: () => attachmentChanged(value => value + 1) })
+      const attachmentManager = attachmentManagerRef.current
+      attachmentManager.configure(board?.attachments, t)
+      React.useEffect(() => { attachmentManager.activate(); return () => attachmentManager.dispose() }, [attachmentManager])
+      React.useEffect(() => { attachmentManager.reconcile(board?.tasks || []) }, [board, attachmentManager])
 
       const actionInFlightRef = React.useRef(false)
       const inFlightRef = React.useRef(false)
@@ -2516,7 +2753,7 @@ window.__ModuleLoader__.load({
         }
       }, [])
 
-      const runAction = React.useCallback(async (key, action, payload, successKey) => {
+      const runAction = React.useCallback(async (key, action, payload, successKey, onFailure) => {
         if (actionInFlightRef.current) return null
         actionInFlightRef.current = true
         setBusyKey(key)
@@ -2527,6 +2764,7 @@ window.__ModuleLoader__.load({
           return data === undefined ? true : data
         } catch (error) {
           const info = errorInfo(error)
+          if (onFailure) onFailure(info)
           pushToast(errorText(t, info) || t('actionFailed'), 'error')
           if (info.code === 'offline') setLoadError(info)
           return null
@@ -2537,18 +2775,23 @@ window.__ModuleLoader__.load({
       }, [pushToast, t])
 
       const answerTask = React.useCallback(async (id, text) => {
+        const task = board?.tasks.find(item => item.id === id)
+        if (!task) return false
         const trimmed = typeof text === 'string' ? text.trim() : ''
-        if (!trimmed) return false
-        const result = await runAction('answer:' + id, 'task.answer', { id, text: trimmed }, 'answered')
+        const key = answerBucket(task), context = attachmentContext(task)
+        let attachments
+        try { attachments = attachmentManager.ids(key, context) } catch (error) { pushToast(errorText(t, errorInfo(error)), 'error'); return false }
+        if (!trimmed && !attachments.length) return false
+        const question = questionKey(task)
+        const result = await runAction('answer:' + id, 'task.answer', { id, text: trimmed, attachments, questionKey: question }, 'answered', info => attachmentManager.fail(key, info))
         if (!result) return false
+        attachmentManager.clear(key)
         setAnswers(current => {
-          if (!current[id]) return current
-          const next = { ...current }
-          delete next[id]
-          return next
+          if (!current[id] || current[id].questionKey !== question) return current
+          const next = { ...current }; delete next[id]; return next
         })
         return true
-      }, [runAction])
+      }, [runAction, board, attachmentManager, pushToast, t])
 
       const retryTask = React.useCallback(async id => (
         Boolean(await runAction('retry:' + id, 'task.retry', { id }, 'retried'))
@@ -2565,12 +2808,13 @@ window.__ModuleLoader__.load({
       }, [runAction, closeDetail])
 
       const addTask = React.useCallback(async payload => {
-        const result = await runAction('task.add', 'task.add', payload, 'taskAdded')
+        const result = await runAction('task.add', 'task.add', payload, 'taskAdded', info => attachmentManager.fail('new-task', info))
         if (!result) return false
+        attachmentManager.clear('new-task')
         pushToast(t('taskQueuedHint'), 'info')
         setComposerOpen(false)
         return true
-      }, [runAction, pushToast, t])
+      }, [runAction, pushToast, t, attachmentManager])
 
       const addWorkspace = React.useCallback(async payload => {
         setAddWorkspaceError('')
@@ -2919,7 +3163,7 @@ window.__ModuleLoader__.load({
             : null,
           board ? h(SuperagentManager, { key: workspaceId + ':' + (selectedSuperagent?.id || ''), t, board, workspaceId, selectedId: selectedSuperagent?.id || '', onSelect: id => { setSuperagentId(id) }, busy: Boolean(busyKey), onAdd: addSuperagent, onRename: renameSuperagent, onRemove: removeSuperagent }) : null,
           board ? h(TaskEntry, { t, open: composerOpen, onOpen: openComposer, buttonRef: taskEntryButtonRef, containerRef: composerRef, disabled: !hasWorkspaces },
-            h(TaskComposer, { t, workspaces, superagents: board.superagents, defaultSuperagentId: selectedSuperagent?.id || '', defaultWorkspaceId: workspaceId, busyKey, open: composerOpen, onToggle: closeComposer, onSubmit: addTask }),
+            h(TaskComposer, { t, attachmentManager, workspaces, superagents: board.superagents, defaultSuperagentId: selectedSuperagent?.id || '', defaultWorkspaceId: workspaceId, busyKey, open: composerOpen, onToggle: closeComposer, onSubmit: addTask }),
           ) : null,
           !board && !loadError ? h(LoadingSkeleton, { t }) : null,
           !board && loadError
@@ -2936,7 +3180,7 @@ window.__ModuleLoader__.load({
           board
             ? h('div', { className: 'lsa-layout', 'data-detail': selectedTask ? 'true' : 'false' },
               h('div', { className: 'lsa-main-col' },
-                needsTasks.length > 0 ? h(AttentionPanel, { t, tasks: needsTasks, answers: visibleAnswers, busyKey, now, onAnswerChange: handleAnswerChange, onAnswer: answerTask, onOpen: openDetail }) : null,
+                needsTasks.length > 0 ? h(AttentionPanel, { t, attachmentManager, tasks: needsTasks, answers: visibleAnswers, busyKey, now, onAnswerChange: handleAnswerChange, onAnswer: answerTask, onOpen: openDetail }) : null,
                 allSettled && needsTasks.length === 0
                   ? h('div', { className: 'lsa-banner lsa-banner-info', role: 'status' },
                     h(Icon, { name: 'check', size: 14 }),
@@ -2968,6 +3212,9 @@ window.__ModuleLoader__.load({
                   key: selectedTask.id,
                   t,
                   task: selectedTask,
+                  answer: visibleAnswers[selectedTask.id] || '',
+                  onAnswerChange: handleAnswerChange,
+                  attachmentManager,
                   log: detailLog,
                   logLoading: detailLoading,
                   logError: detailError,

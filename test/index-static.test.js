@@ -16,8 +16,12 @@ test('index: exports the plugin name and declares only the connection service', 
   assert.match(source, /export function apply\(/)
 })
 
-test('index: registers exactly one POST route at the contract path with a buffered body', () => {
-  assert.equal([...source.matchAll(/\.fetch\.register\(/g)].length, 1)
+test('index: registers buffered invoke and separately bounded streaming attachment routes', () => {
+  assert.equal([...source.matchAll(/\.fetch\.register\(/g)].length, 2)
+  assert.match(source, /path: '\/api\/local-superagent\/attachment'/)
+  assert.match(source, /methods: \['POST', 'GET'\]/)
+  assert.match(source, /requestBody: 'streaming'/)
+  assert.match(source, /attachmentHttp\(engine.attachments, request, ctx.connection\)/)
   const route = source.match(/const ROUTE = '([^']+)'/)
   assert.equal(route?.[1], '/api/local-superagent/invoke')
   assert.equal([...source.matchAll(/\/api\/local-superagent\/invoke/g)].length, 1)

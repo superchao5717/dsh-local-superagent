@@ -30,7 +30,7 @@ const contractActions = [
 
 // Execute the actual single-file module with a minimal React hook host. No DOM,
 // network, real ledger or plugin install is involved; component callbacks are real.
-function clientHarness(initialStates = []) {
+function clientHarness(initialStates = [], environment = {}) {
   const states = [...initialStates]
   const refs = []
   const calls = []
@@ -51,15 +51,16 @@ function clientHarness(initialStates = []) {
   }
   let module
   const context = {
-    React, console, Intl, Date, Set, Map, AbortSignal,
+    React, console, Intl, Date, Set, Map, AbortSignal, AbortController, URLSearchParams, URL,
     window: { __ModuleLoader__: { load: value => { module = value } }, setTimeout: () => 0 },
     fetch: async (route, options) => {
       calls.push({ route, ...JSON.parse(options.body) })
       return { ok: true, json: async () => ({ ok: true, data: { groups: [], superagent: { id: 'new', workspaceId: 'w1' } } }) }
     },
+    ...environment,
   }
   vm.createContext(context)
-  const instrumented = source.replace("    return {\n      inject:", "    globalThis.clientTest = { normalizeBoard, normalizeSettings, ownerTitle, waitingText, scopeTasks, TaskCard, Topbar, TaskEntry, shortModelLabel, AttentionPanel, TaskComposer, SettingsPopover, DetailDrawer, Page, SuperagentManager, dictionaries };\n    return {\n      inject:")
+  const instrumented = source.replace("    return {\n      inject:", "    globalThis.clientTest = { normalizeBoard, normalizeSettings, ownerTitle, waitingText, scopeTasks, createAttachmentManager, uploadAttachment, attachmentEvents, attachmentContext, answerBucket, AttachmentPicker, SavedAttachments, TaskCard, Topbar, TaskEntry, shortModelLabel, AttentionPanel, TaskComposer, SettingsPopover, DetailDrawer, Page, SuperagentManager, dictionaries };\n    return {\n      inject:")
   vm.runInContext(instrumented, context, { filename: clientPath })
   module.factory(name => { assert.equal(name, 'react'); return React })
   return {
@@ -146,7 +147,7 @@ test('client: locale en and zh expose the same non-empty keys', () => {
   assert.match(zh.get('workspaceCount'), /\{n\}/)
 })
 
-test('client: all API calls use the single same-origin invoke route and contract actions', () => {
+test('client: JSON actions use the single same-origin invoke route and contract vocabulary', () => {
   const route = source.match(/const ROUTE = '([^']+)'/)
   assert.equal(route?.[1], 'api/local-superagent/invoke')
   assert.equal([...source.matchAll(/api\/local-superagent\/invoke/g)].length, 1)
@@ -339,7 +340,7 @@ test('client: attention panel reuses answer API, preserves drafts on polling and
   assert.equal(nodes(inline).filter(node => node.type === 'textarea').length, 2)
   await nodes(inline).find(node => node.type === 'button' && text(node).includes('submitAnswer')).props.onClick()
   assert.deepEqual(plain(harness.calls.map(({ route, ...payload }) => payload)), [
-    { action: 'task.answer', id: 'qa', text: 'Use the feature branch' },
+    { action: 'task.answer', id: 'qa', text: 'Use the feature branch', attachments: [], questionKey: '[1000,"Which branch?"]' },
   ])
   tree = harness.render('Page', { t: translate })
   panel = component(tree, 'AttentionPanel')
@@ -396,7 +397,7 @@ test('client: inline answering honors Enter/Shift+Enter, busy and failed-submit 
 })
 
 test('client: task composer rejects mismatched owners and submits explicit matching ownership', async () => {
-  const form = { title: 'Task', goal: 'Goal', acceptance: '', priority: 2, workspaceId: 'w1', superagentId: 'c' }
+  const form = { title: 'Task', goal: 'Goal', acceptance: '', priority: 2, workspaceId: 'w1', workspaceFilterId: 'w1', superagentId: 'c' }
   const harness = clientHarness([form, {}])
   let sent = null
   const props = { t: translate, workspaces: fixture.workspaces, superagents: fixture.superagents, defaultWorkspaceId: 'w1', defaultSuperagentId: '', busyKey: '', open: true, onSubmit: async value => { sent = value; return true } }
@@ -413,6 +414,57 @@ test('client: task composer rejects mismatched owners and submits explicit match
   const ownerSelect = nodes(tree).find(node => node.props.id === 'lsa-task-agent')
   assert.ok(ownerSelect)
   assert.doesNotMatch(text(ownerSelect), /Gamma/)
+})
+
+test('client: supervisor-first selection lists every workspace and explicit workspace selection constrains owners', async () => {
+  const harness = clientHarness()
+  const sent = []
+  const superagents = fixture.superagents.map(agent => ({ ...agent, title: 'Same name' }))
+  const props = { t: translate, workspaces: fixture.workspaces, superagents, defaultWorkspaceId: '', defaultSuperagentId: '', busyKey: '', open: true, onSubmit: async value => { sent.push(value); return false } }
+  const select = (tree, id) => nodes(tree).find(node => node.type === 'select' && node.props.id === id)
+  const ownerIds = tree => nodes(select(tree, 'lsa-task-agent')).filter(node => node.type === 'option' && node.props.value).map(node => node.props.value)
+  let tree = harness.render('TaskComposer', props)
+  assert.deepEqual(ownerIds(tree), ['a', 'b', 'c'], 'no workspace must show all active supervisors')
+  const options = nodes(select(tree, 'lsa-task-agent')).filter(node => node.type === 'option' && node.props.value)
+  assert.match(text(options[0]), /Same name.*Workspace one.*a/)
+  assert.match(text(options[1]), /Same name.*Workspace one.*b/)
+  assert.match(text(options[2]), /Same name.*Workspace two.*c/)
+  select(tree, 'lsa-task-agent').props.onChange({ target: { value: 'c' } })
+  tree = harness.render('TaskComposer', props)
+  assert.equal(select(tree, 'lsa-task-workspace').props.value, 'w2')
+  assert.deepEqual(ownerIds(tree), ['a', 'b', 'c'], 'an owner-derived workspace is not an explicit workspace filter')
+  select(tree, 'lsa-task-agent').props.onChange({ target: { value: 'a' } })
+  tree = harness.render('TaskComposer', props)
+  assert.equal(select(tree, 'lsa-task-workspace').props.value, 'w1', 'supervisor-first flow can switch to another workspace')
+  select(tree, 'lsa-task-workspace').props.onChange({ target: { value: 'w2' } })
+  tree = harness.render('TaskComposer', props)
+  assert.equal(select(tree, 'lsa-task-agent').props.value, '', 'explicit workspace change clears a foreign owner')
+  assert.deepEqual(ownerIds(tree), ['c'])
+  select(tree, 'lsa-task-agent').props.onChange({ target: { value: 'a' } })
+  tree = harness.render('TaskComposer', props)
+  assert.equal(select(tree, 'lsa-task-agent').props.value, '', 'a stale/foreign owner event cannot bypass the explicit filter')
+  select(tree, 'lsa-task-agent').props.onChange({ target: { value: 'c' } })
+  tree = harness.render('TaskComposer', props)
+  select(tree, 'lsa-task-workspace').props.onChange({ target: { value: 'w2' } })
+  tree = harness.render('TaskComposer', props)
+  assert.equal(select(tree, 'lsa-task-agent').props.value, 'c', 'matching ownership survives the same explicit workspace')
+  nodes(tree).find(node => node.type === 'input' && node.props.id === 'lsa-task-title').props.onChange({ target: { value: 'Title' } })
+  nodes(tree).find(node => node.type === 'textarea' && node.props.id === 'lsa-task-goal').props.onChange({ target: { value: 'Goal' } })
+  tree = harness.render('TaskComposer', props)
+  await nodes(tree).find(node => node.type === 'button' && text(node).includes('taskSubmit')).props.onClick()
+  assert.deepEqual(sent.map(({ workspaceId, superagentId }) => ({ workspaceId, superagentId })), [{ workspaceId: 'w2', superagentId: 'c' }])
+  tree = harness.render('TaskComposer', { ...props, superagents: superagents.filter(agent => agent.id !== 'c') })
+  await nodes(tree).find(node => node.type === 'button' && text(node).includes('taskSubmit')).props.onClick()
+  assert.equal(sent.length, 1, 'deleted ownership cannot be submitted even if it remains in the local draft')
+  assert.equal(harness.states[1].superagentId, 'superagentRequired')
+  select(tree, 'lsa-task-workspace').props.onChange({ target: { value: '' } })
+  tree = harness.render('TaskComposer', props)
+  assert.deepEqual(ownerIds(tree), ['a', 'b', 'c'], 'clearing the explicit workspace restores all choices')
+  assert.equal(select(tree, 'lsa-task-agent').props.value, '')
+
+  const scoped = clientHarness()
+  const scopedTree = scoped.render('TaskComposer', { ...props, defaultWorkspaceId: 'w1' })
+  assert.deepEqual(ownerIds(scopedTree), ['a', 'b'], 'a workspace chosen first filters the form on opening')
 })
 
 test('client: Superagent create/rename/remove callbacks use contracted payloads', async () => {
@@ -618,4 +670,253 @@ test('client: autonomy controls enforce integer bounds and worker-empty copy mea
   assert.match(zh.autonomyHint, /不能绕过登录、付款/)
   assert.match(source, /prefers-reduced-motion/)
   assert.match(source, /@container lsaboard/)
+})
+
+function uploadFixture(limits = {}) {
+  const harness = clientHarness()
+  const operations = [], revoked = []
+  let time = 1000, previews = 0
+  const manager = harness.api.createAttachmentManager({
+    now: () => time,
+    createURL: () => 'blob:preview-' + (++previews), revokeURL: url => revoked.push(url),
+    upload: (file, context, signal, progress) => new Promise((resolve, reject) => operations.push({ file, context, signal, progress, resolve, reject })),
+  })
+  manager.configure({ available: true, limits }, translate)
+  return { harness, manager, operations, revoked, setTime: value => { time = value } }
+}
+const uploadFile = (name = 'file.txt', size = 4, type = 'text/plain') => ({ name, size, type })
+const uploaded = (operation, uploadId = 'trusted-token', expiresAt = 10000) => operation.resolve({ uploadId, expiresAt, questionKey: operation.context.questionKey })
+
+function xhrFixture() {
+  const requests = []
+  class FakeXHR {
+    constructor() { this.upload = {}; this.headers = {}; requests.push(this) }
+    open(method, url) { this.method = method; this.url = url }
+    setRequestHeader(key, value) { this.headers[key] = value }
+    send(body) { this.body = body }
+    abort() { this.aborted = true; this.onabort?.() }
+    respond(body, status = 200) { this.status = status; this.responseText = JSON.stringify(body); this.onload?.() }
+  }
+  return { requests, XMLHttpRequest: FakeXHR }
+}
+
+test('client attachments: bounded Blob transport includes credentials/question lock and handles failures/abort', async () => {
+  const transport = xhrFixture()
+  const harness = clientHarness([], { XMLHttpRequest: transport.XMLHttpRequest })
+  const controller = new AbortController(), progress = []
+  const file = uploadFile('图.png', 10, 'image/png')
+  const context = { kind: 'image', taskId: 'qa', questionKey: 'opaque-current-question' }
+  const pending = harness.api.uploadAttachment(file, context, controller.signal, value => progress.push(value))
+  const xhr = transport.requests[0]
+  assert.equal(xhr.method, 'POST')
+  assert.equal(xhr.withCredentials, true)
+  assert.equal(xhr.body, file, 'raw Blob/file body, never base64 in task JSON')
+  assert.equal(xhr.headers['content-type'], 'application/octet-stream')
+  const url = new URL(xhr.url, 'http://local/')
+  assert.equal(url.pathname, '/api/local-superagent/attachment')
+  assert.equal(url.searchParams.get('taskId'), 'qa')
+  assert.equal(url.searchParams.get('questionKey'), context.questionKey)
+  assert.equal(url.searchParams.get('mediaType'), 'image/png')
+  xhr.upload.onprogress({ loaded: 5, total: 10, lengthComputable: true })
+  assert.deepEqual(plain(progress), [{ loaded: 5, total: 10 }])
+  xhr.respond({ ok: true, data: { uploadId: 'token', expiresAt: 10000, questionKey: context.questionKey } })
+  assert.equal((await pending).uploadId, 'token')
+  const failure = harness.api.uploadAttachment(file, { kind: 'file' }, new AbortController().signal, () => {})
+  transport.requests[1].respond({ ok: false, code: 'attachment_too_large', message: 'Too large' }, 413)
+  await assert.rejects(failure, error => error.code === 'attachment_too_large')
+  const abortController = new AbortController()
+  const aborted = harness.api.uploadAttachment(file, { kind: 'file' }, abortController.signal, () => {})
+  abortController.abort()
+  await assert.rejects(aborted, error => error.code === 'attachment_cancelled')
+  assert.equal(transport.requests[2].aborted, true)
+  const wrongQuestion = harness.api.uploadAttachment(file, context, new AbortController().signal, () => {})
+  transport.requests[3].respond({ ok: true, data: { uploadId: 'wrong', expiresAt: 10000, questionKey: 'another-question' } })
+  await assert.rejects(wrongQuestion, error => error.code === 'attachment_question_changed')
+})
+
+test('client attachments: count/byte/image/native limits and cumulative task usage are enforced before upload', async () => {
+  const { manager, operations } = uploadFixture({ maxAttachments: 2, maxTotalBytes: 15, maxFileBytes: 10, maxImageBytes: 5 })
+  await manager.add('new-task', [uploadFile('large.png', 6, 'image/png'), uploadFile('large.bin', 11)])
+  assert.equal(operations.length, 0)
+  assert.match(manager.view('new-task').error, /attachmentSizeLimit/)
+  const pending = manager.add('new-task', [uploadFile('a'), uploadFile('b'), uploadFile('c')])
+  await Promise.resolve()
+  assert.equal(operations.length, 2)
+  assert.equal(manager.view('new-task').error, 'attachmentsCountLimit')
+  operations.forEach((operation, index) => uploaded(operation, 'token-' + index))
+  await pending
+  assert.deepEqual(plain(manager.ids('new-task')), ['token-0', 'token-1'])
+  await manager.add('answer', [uploadFile()], { existingCount: 1, existingBytes: 12 })
+  assert.match(manager.view('answer').error, /attachmentSizeLimit/)
+  const defaults = uploadFixture()
+  const persisted = defaults.harness.api.attachmentContext({ id: 't', questionKey: 'q', attachments: [{ bytes: 2, sourceBytes: 12 }, { bytes: 5, sourceBytes: 1 }, { bytes: 3 }] })
+  assert.equal(persisted.existingBytes, 20, 'cumulative budget never shrinks after native image normalization')
+  assert.deepEqual(plain(defaults.manager.view('new-task').limits), { maxFileBytes: 104857600, maxImageBytes: 20971520, maxAttachments: 20, maxTotalBytes: 209715200, uploadTtlMs: 1800000 })
+  defaults.manager.configure({ available: false }, translate)
+  await defaults.manager.add('new-task', [uploadFile()])
+  assert.equal(defaults.operations.length, 0)
+  assert.equal(defaults.manager.view('new-task').error, 'attachmentsUnavailable')
+})
+
+test('client attachments: failure/retry/expiry preserve Blob and successful clear releases only local previews', async () => {
+  const { manager, operations, revoked, setTime } = uploadFixture()
+  const file = uploadFile('image.png', 4, 'image/png')
+  const pending = manager.add('new-task', [file])
+  await Promise.resolve()
+  assert.equal(manager.view('new-task').blocked, true)
+  operations[0].progress({ loaded: 2, total: 4 })
+  assert.equal(manager.view('new-task').items[0].loaded, 2)
+  operations[0].reject(new Error('Network unavailable'))
+  await pending
+  assert.equal(manager.view('new-task').items[0].status, 'error')
+  assert.throws(() => manager.ids('new-task'), error => error.code === 'attachment_upload_busy')
+  const id = manager.view('new-task').items[0].id
+  const retry = manager.retry('new-task', id)
+  await Promise.resolve()
+  assert.equal(operations[1].file, file)
+  uploaded(operations[1], 'second-token')
+  await retry
+  assert.deepEqual(plain(manager.ids('new-task')), ['second-token'])
+  setTime(10001)
+  assert.equal(manager.view('new-task').items[0].status, 'error')
+  assert.equal(manager.view('new-task').blocked, true)
+  const expiredRetry = manager.retry('new-task', id)
+  await Promise.resolve(); uploaded(operations[2], 'fresh-token', 20000); await expiredRetry
+  manager.fail('new-task', { code: 'attachment_expired', message: 'Host token expired' })
+  assert.equal(manager.view('new-task').items[0].status, 'error')
+  const finalRetry = manager.retry('new-task', id)
+  await Promise.resolve(); uploaded(operations[3], 'final-token', 20000); await finalRetry
+  manager.clear('new-task')
+  assert.deepEqual(revoked, ['blob:preview-1'])
+  assert.equal(operations.length, 4, 'removal/clear never issues a native delete request')
+})
+
+test('client attachments: removed/question-replaced/disposed operations cannot resurrect another batch', async () => {
+  const { harness, manager, operations, revoked } = uploadFixture()
+  const task = { ...fixture.tasks[0], questionKey: 'server-question-1' }
+  const key = harness.api.answerBucket(task), context = harness.api.attachmentContext(task)
+  const old = manager.add(key, [uploadFile('old.png', 4, 'image/png')], context)
+  const newTask = manager.add('new-task', [uploadFile('retained.txt')])
+  await Promise.resolve()
+  const oldId = manager.view(key, context).items[0].id
+  manager.remove(key, oldId)
+  assert.equal(operations[0].signal.aborted, true)
+  const replacement = manager.add(key, [uploadFile('replacement.png', 4, 'image/png')], context)
+  await Promise.resolve()
+  operations[0].progress({ loaded: 4, total: 4 }); uploaded(operations[0], 'stale')
+  uploaded(operations[1], 'new-task-token'); uploaded(operations[2], 'replacement-token')
+  await Promise.all([old, newTask, replacement])
+  assert.deepEqual(plain(manager.ids(key, context)), ['replacement-token'])
+  manager.reconcile([{ ...task, questionKey: 'server-question-2' }])
+  assert.equal(manager.view(key, context).items.length, 0)
+  assert.deepEqual(plain(manager.ids('new-task')), ['new-task-token'], 'question replacement cannot clear the independent new-task draft')
+  const last = manager.add('new-task', [uploadFile('last.png', 4, 'image/png')])
+  await Promise.resolve()
+  manager.dispose()
+  assert.equal(operations[3].signal.aborted, true)
+  uploaded(operations[3], 'late-after-unmount'); await last
+  assert.deepEqual(revoked.sort(), ['blob:preview-1', 'blob:preview-2', 'blob:preview-3'])
+})
+
+test('client attachments: picker/drop/paste are local and pending/expired uploads gate task submission', async () => {
+  const { harness, manager, operations, setTime } = uploadFixture()
+  const form = { title: 'Task', goal: 'Goal', acceptance: '', priority: 2, workspaceId: 'w1', workspaceFilterId: 'w1', superagentId: 'a' }
+  const ui = clientHarness([form, {}]), submitted = []
+  const props = { t: translate, workspaces: fixture.workspaces, superagents: fixture.superagents, defaultWorkspaceId: '', defaultSuperagentId: '', busyKey: '', open: true, attachmentManager: manager, onSubmit: async value => { submitted.push(value); return false } }
+  let prevented = 0
+  const events = harness.api.attachmentEvents(manager, 'new-task', {})
+  events.onPaste({ clipboardData: { files: [] }, preventDefault: () => { prevented += 1 } })
+  assert.equal(prevented, 0, 'ordinary text paste is not intercepted')
+  events.onPaste({ clipboardData: { files: [uploadFile('clip.mp4', 4, 'video/mp4')] }, preventDefault: () => { prevented += 1 } })
+  await Promise.resolve()
+  assert.equal(prevented, 1)
+  assert.equal(operations[0].context.kind, 'file', 'videos are generic files, not pretend vision inputs')
+  let tree = ui.render('TaskComposer', props)
+  const submit = value => nodes(value).find(node => node.type === 'button' && text(node).includes('taskSubmit'))
+  assert.equal(submit(tree).props.disabled, true)
+  await submit(tree).props.onClick()
+  assert.equal(submitted.length, 0)
+  uploaded(operations[0], 'file-token')
+  await Promise.resolve(); await Promise.resolve()
+  tree = ui.render('TaskComposer', props)
+  assert.equal(Boolean(submit(tree).props.disabled), false)
+  await submit(tree).props.onClick()
+  assert.deepEqual(plain(submitted[0].attachments), ['file-token'])
+  assert.deepEqual(plain(manager.ids('new-task')), ['file-token'], 'failed task admission preserves uploaded references')
+  const owner = nodes(tree).find(node => node.type === 'select' && node.props.id === 'lsa-task-agent')
+  owner.props.onChange({ target: { value: 'c' } })
+  assert.equal(operations.length, 1, 'changing supervisor does not upload new-task files again')
+  tree = ui.render('TaskComposer', props)
+  setTime(10001)
+  await submit(tree).props.onClick()
+  assert.equal(submitted.length, 1, 'expiry between render and click is handled without an unhandled rejection')
+  assert.ok(ui.states[1].attachments)
+  const picker = harness.render('AttachmentPicker', { t: translate, manager, bucketKey: 'new-task' })
+  assert.ok(nodes(picker).some(node => node.type === 'input' && node.props.type === 'file' && node.props.multiple))
+  assert.doesNotMatch(source, /document\.addEventListener\(['"](?:paste|drop|dragover)/)
+})
+
+test('client attachments: inline and detail share question drafts and attachment-only answers use trusted upload IDs', async () => {
+  const transport = xhrFixture(), harness = clientHarness([], { XMLHttpRequest: transport.XMLHttpRequest })
+  const raw = { ...fixture, settingsScope: 'global', attachments: { available: true }, tasks: fixture.tasks.map(task => task.id === 'qa' ? { ...task, questionKey: 'opaque-authoritative-question' } : task) }
+  harness.states.push(harness.api.normalizeBoard(raw), null, false, '', 'w1', 'a')
+  let tree = harness.render('Page', { t: translate })
+  let panel = component(tree, 'AttentionPanel')
+  const manager = panel.props.attachmentManager, task = panel.props.tasks[0]
+  const key = harness.api.answerBucket(task), context = harness.api.attachmentContext(task)
+  const pending = manager.add(key, [uploadFile('answer.txt')], context)
+  await Promise.resolve()
+  assert.equal(new URL(transport.requests[0].url, 'http://local/').searchParams.get('questionKey'), 'opaque-authoritative-question')
+  transport.requests[0].respond({ ok: true, data: { uploadId: 'answer-token', expiresAt: Date.now() + 100000, questionKey: task.questionKey } })
+  await pending
+  harness.states[11] = 'qa'
+  tree = harness.render('Page', { t: translate })
+  panel = component(tree, 'AttentionPanel')
+  let detail = component(tree, 'DetailDrawer')
+  assert.equal(detail.props.attachmentManager, panel.props.attachmentManager)
+  panel.props.onAnswerChange('qa', 'Shared draft')
+  tree = harness.render('Page', { t: translate })
+  detail = component(tree, 'DetailDrawer')
+  assert.equal(detail.props.answer, 'Shared draft')
+  detail.props.onAnswerChange('qa', '')
+  const inlineUI = clientHarness().render('AttentionPanel', component(harness.render('Page', { t: translate }), 'AttentionPanel').props)
+  assert.equal(Boolean(nodes(inlineUI).find(node => node.type === 'button' && text(node).includes('submitAnswer')).props.disabled), false)
+  await detail.props.onAnswer('qa', '')
+  assert.deepEqual(plain(harness.calls.at(-1)), { route: 'api/local-superagent/invoke', action: 'task.answer', id: 'qa', text: '', attachments: ['answer-token'], questionKey: 'opaque-authoritative-question' })
+  assert.equal(manager.view(key, context).items.length, 0)
+})
+
+test('client attachments: immediate removal never starts transport and arbitrary image MIME is not previewed', async () => {
+  const { manager, operations, revoked } = uploadFixture()
+  const pending = manager.add('new-task', [uploadFile('removed.png', 4, 'image/png')])
+  manager.remove('new-task', manager.view('new-task').items[0].id)
+  await pending
+  assert.equal(operations.length, 0, 'removal before the first microtask prevents network intake')
+  assert.deepEqual(revoked, ['blob:preview-1'])
+  const unsupportedRaster = manager.add('new-task', [uploadFile('vector.svg', 4, 'image/svg+xml')])
+  await Promise.resolve()
+  assert.equal(operations[0].context.kind, 'file')
+  assert.equal(manager.view('new-task').items[0].previewUrl, '')
+  uploaded(operations[0]); await unsupportedRaster
+})
+
+test('client attachments: saved references use only owner-gated GETs and capability absence keeps the board usable', () => {
+  const harness = clientHarness()
+  const task = { id: 'qa', attachments: [{ kind: 'image', attachmentId: 'sha256:abc', name: 'picture.png', bytes: 10 }, { kind: 'file', attachmentId: 'sha256:def', name: 'video.mp4', bytes: 20 }] }
+  const tree = harness.render('SavedAttachments', { t: translate, task })
+  const links = nodes(tree).filter(node => node.type === 'a')
+  assert.equal(links.length, 2)
+  for (const link of links) {
+    const url = new URL(link.props.href, 'http://local/')
+    assert.equal(url.pathname, '/api/local-superagent/attachment')
+    assert.equal(url.searchParams.get('taskId'), 'qa')
+    assert.ok(url.searchParams.get('attachmentId').startsWith('sha256:'))
+    assert.deepEqual([...url.searchParams.keys()].sort(), ['attachmentId', 'taskId'])
+    assert.equal(link.props.rel, 'noopener noreferrer')
+  }
+  const manager = harness.api.createAttachmentManager()
+  const picker = harness.render('AttachmentPicker', { t: translate, manager, bucketKey: 'new-task' })
+  assert.match(text(picker), /attachmentsUnavailable/)
+  assert.equal(nodes(picker).find(node => node.type === 'button').props.disabled, true)
+  assert.deepEqual(plain(manager.ids('new-task')), [], 'no attachment capability does not block text-only tasks')
 })

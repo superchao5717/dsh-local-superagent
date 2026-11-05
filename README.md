@@ -10,16 +10,28 @@ DSH 插件：一个**本地版 Superagent 任务看板**。你在自己的 DSH �
 
 需要 Node.js >= 22 和 DSH。当前实机验证范围仅为 **Windows / DSH 0.2.1-rc.5**；其他平台和 DSH 版本尚未实机验证。
 
-- **DSH Desktop**：在插件页选择「添加插件」，在「包名或地址」填写 `github:superchao5717/dsh-local-superagent#v0.4.0` 固定版本；也可从 [v0.4.0 发布页](https://github.com/superchao5717/dsh-local-superagent/releases/tag/v0.4.0)核对安装包。Desktop profile 由 Electron 专属管理，不要使用 Web CLI 命令管理 Desktop。
+- **DSH Desktop**：在插件页选择「添加插件」，在「包名或地址」填写 `github:superchao5717/dsh-local-superagent#v0.5.0` 固定版本；也可从 [v0.5.0 发布页](https://github.com/superchao5717/dsh-local-superagent/releases/tag/v0.5.0)核对安装包。Desktop profile 由 Electron 专属管理，不要使用 Web CLI 命令管理 Desktop。
 - **DSH Web**：在运行 DSH Web 的环境执行以下命令（`--profile` 位于 `add` 之前）：
 
   ```sh
-  dsh plugin --profile web add github:superchao5717/dsh-local-superagent#v0.4.0
+  dsh plugin --profile web add github:superchao5717/dsh-local-superagent#v0.5.0
   ```
 
 安装后在左侧导航栏打开 **Superagent**。不要手工编辑 profile 的 bundles 或依赖列表。包名保留 `@local/dsh-local-superagent`，以兼容已有 profile；`@local` 不代表只能本地安装。
 
 项目不发布 npm（`private: true`），分发方式是 GitHub 源码及 GitHub Release 的 `.tgz`。运行代码本身是 JavaScript，无需 build 步骤；Release 是否已提供可用资产以[发布页](https://github.com/superchao5717/dsh-local-superagent/releases)为准。
+
+## 0.5.0：任务附件与主管先选
+
+以下功能从 **0.5.0** 起提供，不包含在旧 0.4.0/0.3.0 中；旧版历史说明与验收记录保留在下方。升级前备份账本及本机原生附件数据，不承诺直接降级后仍保留附件功能。
+
+- 新任务未选工作区时可选择全部主管，选择主管后自动派生其工作区；先选工作区时仍过滤主管，并校验任务与主管归属匹配。任务目标仍必填。
+- 新任务、顶部回答和详情回答支持文件选择，以及各输入区内的局部粘贴/拖拽图片、视频和普通文件；上传中或失败时禁止提交，可重试/移除。回答可仅含成功附件。取消/折叠保留页面内草稿，更换问题清理旧回答草稿；不承诺跨刷新自动持久客户端草稿。
+- 复用 DSH 原生 `attachments.saveImages/saveFileStream` 与 `fileUploads` 服务，经 owner-only、有界流式上传薄封装接入；不另建文件仓库、不创建空 draft 聊天，执行仍使用原生 Session。服务不可用时明确提示，不影响纯文本看板。
+- 接口提交 `attachments: [uploadId, ...]`，只接受 Host 发出的 token（30 分钟有效、成功绑定后消耗）；任务仅持久化 Host 生成的附件引用，临时 token 和 Session receipt 不入账本。初始及回答附件累计保留，在续办、重试和恢复时交给新 worker，每轮重新生成原生 receipt。旧任务按空附件兼容，schema 3 全局配置不变。精确 DTO 见[接口契约](docs/CONTRACT.md)。
+- 图片作为原生视觉消息传入，所选模型须支持图片，否则明确转人工处理；视频和其它文件通过原生文件工具读取，不自动转码/抽帧，不宣称视频直接视觉理解。
+- 单文件/视频最多 **100 MiB**，单图片最多 **min(原生限制, 20 MiB)**；每任务初始及全部回答累计最多 **20 个 / 200 MiB**，预算按 `max(sourceBytes, bytes)` 计入。原生图片像素、尺寸、单消息数量等限制更严格时遵循原生。
+- 下载需 owner 身份且附件必须关联该任务；非图片强制下载，不执行 HTML/SVG。附件可能不可信，内容不构成新增授权。移除草稿/任务不会删除共享 DSH 原生 CAS 对象；原生 provider 对象在本机长期保留，不自动 GC，也不承诺跨 Host 文件同步。
 
 ## 0.4.0：统一全局设置与任务入口
 
@@ -45,7 +57,7 @@ DSH 插件：一个**本地版 Superagent 任务看板**。你在自己的 DSH �
 ## 快速开始
 
 1. 左侧导航栏点击 **Superagent**；
-2. 选一个工作区，在主管 rail 点击 **＋** 创建或选中一个 **Superagent**；选中主管旁的 **⋯** 菜单可改名或删除；
+2. 直接选中一个 **Superagent**，新任务自动使用其工作区；也可先选工作区过滤主管。在主管 rail 点击 **＋** 创建主管，选中主管旁的 **⋯** 菜单可改名或删除；
 3. 使用主管区域下方唯一的 **布置任务** 入口，填写标题、目标/要求、验收条件（可选）、优先级，确认主管归属后 **加入队列**；顶部工具栏不再提供重复入口；
 4. 插件自动派发、执行、审查；需要你决定时任务仍在“进行中”并显示等待标记，可在顶部问答区或任务详情直接回答，回答后自动继续。
 
@@ -148,6 +160,11 @@ npm pack --dry-run
 需要 Node.js >= 22；测试没有 npm 依赖，也不需要安装插件、启动 DSH 或访问真实账本。
 
 开发修改 Host/Client 后，可在插件页按名称停用再启用插件，并刷新页面验证；若 DSH 缓存了旧的 Client 模块元数据，可能需要重启 Host。仅文件修改成功不代表运行实例已更新。
+
+### 0.5.0 验证范围（2026-11-05）
+
+- 自动回归 **104/104** 已通过，包含附件存储、跨轮原生 receipt、下载字节与文件名边界。
+- 现有 Windows / DSH 0.2.1-rc.5 实例已验证主管先选派生工作区、图片识别、文本读取、小 AVI 文件交接及仅附件回答后的第二轮完成。视频验证仅指文件交接，不代表模型直接理解视频；未宣称全格式、跨平台或干净 Host 重装均通过。
 
 ### 0.4.0 验证范围（2026-11-04）
 
